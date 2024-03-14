@@ -44,6 +44,9 @@ class SignUpSerializer(serializers.ModelSerializer):
         return data
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с созданными пользователями."""
+
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -53,4 +56,11 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
+            'is_subscribed',
         )
+
+    def get_is_subscribed(self, obj):
+        for subscriber in obj.subscribers.all():
+            if self.context.user.id == subscriber.subscriber_id:
+                return True
+        return False
