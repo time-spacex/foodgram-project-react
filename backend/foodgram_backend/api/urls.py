@@ -1,9 +1,13 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import SignUpView
-# from djoser.urls.jwt import urlpatterns
+from .views import CustomUserViewSet
 
+
+router = DefaultRouter()
+
+router.register(r'users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
-    path('users/', SignUpView.as_view(), name='signup'),
+    path('', include(router.urls)),
+    path('auth/', include('djoser.urls.authtoken')),
 ]

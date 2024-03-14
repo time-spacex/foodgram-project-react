@@ -28,10 +28,6 @@ class CustomUser(AbstractUser):
         verbose_name='Фамилия',
         max_length=MAX_CHARFIELD_LENGTH
     )
-    password = models.CharField(
-        verbose_name='Пароль',
-        max_length=MAX_CHARFIELD_LENGTH
-    )
     is_admin = models.BooleanField(
         verbose_name='Администратор',
         default=False,

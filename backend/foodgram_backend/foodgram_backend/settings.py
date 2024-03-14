@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
     'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [
@@ -111,15 +113,20 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'AUTH_HEADER_TYPES': ('Token',),
+# Next are the settings of the djoser library for working with users
+# https://djoser.readthedocs.io/en/latest/settings.html#login-field
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    }
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

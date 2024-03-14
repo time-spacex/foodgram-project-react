@@ -27,10 +27,30 @@ class SignUpSerializer(serializers.ModelSerializer):
             recipient_list=[validated_data.get('email')],
             fail_silently=True
         )
-        return super().create(validated_data)
+        user = CustomUser.objects.create(
+            username=validated_data.get('username'),
+            email=validated_data.get('email'),
+            first_name=validated_data.get('first_name'),
+            last_name=validated_data.get('last_name'),
+        )
+        user.set_password(validated_data.get('password'))
+        user.save()
+        return user
 
     def to_representation(self, instance):
         """Метод для вывода сериализованных данных о пользователе."""
         data = super().to_representation(instance)
         data.pop('password', None)
         return data
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+        )
