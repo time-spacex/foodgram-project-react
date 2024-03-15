@@ -60,6 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
+        """Метод для отображения поля подписок."""
         for subscriber in obj.subscribers.all():
             if self.context.user.id == subscriber.subscriber_id:
                 return True

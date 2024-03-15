@@ -10,7 +10,8 @@ class CustomUser(AbstractUser):
 
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
-        max_length=MAX_EMAILFIELD_LENGTH
+        max_length=MAX_EMAILFIELD_LENGTH,
+        unique=True,
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
