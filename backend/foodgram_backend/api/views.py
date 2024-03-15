@@ -1,4 +1,4 @@
-from rest_framework import status, permissions, pagination
+from rest_framework import status, permissions, pagination, exceptions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
@@ -11,6 +11,7 @@ from .serializers import SignUpSerializer, UserSerializer
 class CustomUserViewSet(UserViewSet):
     """Вьюсет для работы с пользователями."""
 
+    permission_classes = (permissions.AllowAny,)
     pagination_class = pagination.LimitOffsetPagination
     http_method_names = ['get', 'post']
 
@@ -40,3 +41,9 @@ class CustomUserViewSet(UserViewSet):
         instance = self.get_object()
         serializer = UserSerializer(instance)
         return Response(serializer.data)
+
+    def get_instance(self):
+        """Метод API для возврата объекта пользователя в запросе."""
+        if self.request.user.is_authenticated:
+            return self.request.user
+        raise exceptions.AuthenticationFailed()
