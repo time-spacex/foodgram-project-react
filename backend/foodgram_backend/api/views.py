@@ -37,9 +37,6 @@ class CustomUserViewSet(UserViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         """Метод API для представления пользователя."""
-        if self.action != 'me':
-            user = CustomUser.objects.get(id=kwargs.get('id'))
-        else:
-            user = request.user
-        serializer = UserSerializer(user, context=request)
+        instance = self.get_object()
+        serializer = UserSerializer(instance)
         return Response(serializer.data)
