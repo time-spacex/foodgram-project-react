@@ -1,6 +1,8 @@
 asgiref==3.7.2
-Django==3.2.16
+Django==4.2.11
 django-extensions==3.2.3
+django-filter==24.1
+django-templated-mail==1.1.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
@@ -9,3 +11,4 @@ Pillow==9.0.0
 sqlparse==0.4.4
 typing_extensions==4.10.0
 ipython==8.18.1
+webcolors==1.13

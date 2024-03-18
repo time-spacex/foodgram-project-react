@@ -2,6 +2,7 @@ from django.core.mail import send_mail
 from rest_framework import serializers, status
 
 from users.models import CustomUser
+from recipes.models import Recipe, Tag, Ingredient
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -43,6 +44,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         data.pop('password', None)
         return data
 
+
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для работы с созданными пользователями."""
 
@@ -65,3 +67,47 @@ class UserSerializer(serializers.ModelSerializer):
             if self.context.user.id == subscriber.subscriber_id:
                 return True
         return False
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор для тегов."""
+
+    class Meta:
+        model = Tag
+        fields = (
+            'id',
+            'name',
+            'color',
+            'slug',
+        )
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для ингредиентов."""
+
+    class Meta:
+        model = Ingredient
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+        )
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатов для рецептов."""
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        )

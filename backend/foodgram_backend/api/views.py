@@ -1,15 +1,16 @@
-from rest_framework import status, permissions, pagination, exceptions
+from rest_framework import status, permissions, pagination, exceptions, viewsets, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
-from .serializers import SignUpSerializer, UserSerializer
+from recipes.models import Tag, Ingredient
+from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer
 
 
 class CustomUserViewSet(UserViewSet):
-    """Вьюсет для работы с пользователями."""
+    """Представление для работы с пользователями."""
 
     permission_classes = (permissions.AllowAny,)
     pagination_class = pagination.LimitOffsetPagination
@@ -47,3 +48,25 @@ class CustomUserViewSet(UserViewSet):
         if self.request.user.is_authenticated:
             return self.request.user
         raise exceptions.AuthenticationFailed()
+
+
+class TagsViewSet(viewsets.ModelViewSet):
+    """Представление для тегов."""
+
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    http_method_names = ['get']
+    pagination_class = None
+    permission_classes = (permissions.AllowAny,)
+
+
+class IngredientsViewSet(viewsets.ModelViewSet):
+    """Представление для ингредиентов."""
+
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    http_method_names = ['get']
+    pagination_class = None
+    permission_classes = (permissions.AllowAny,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('^name')
