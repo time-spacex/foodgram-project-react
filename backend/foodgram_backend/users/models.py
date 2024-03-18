@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
-from foodgram_backend.settings import MAX_CHARFIELD_LENGTH, MAX_EMAILFIELD_LENGTH
+from foodgram_backend.settings import MAX_USERS_CHARFIELD_LENGTH, MAX_EMAILFIELD_LENGTH
 
 
 class CustomUser(AbstractUser):
@@ -15,7 +15,7 @@ class CustomUser(AbstractUser):
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=MAX_CHARFIELD_LENGTH,
+        max_length=MAX_USERS_CHARFIELD_LENGTH,
         unique=True,
         validators=[
             UnicodeUsernameValidator(),
@@ -23,11 +23,11 @@ class CustomUser(AbstractUser):
     )
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=MAX_CHARFIELD_LENGTH
+        max_length=MAX_USERS_CHARFIELD_LENGTH
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=MAX_CHARFIELD_LENGTH
+        max_length=MAX_USERS_CHARFIELD_LENGTH
     )
     is_admin = models.BooleanField(
         verbose_name='Администратор',
@@ -42,6 +42,9 @@ class CustomUser(AbstractUser):
             self.is_admin = True
             self.is_staff = True
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.username
 
 
 class Subscription(models.Model):

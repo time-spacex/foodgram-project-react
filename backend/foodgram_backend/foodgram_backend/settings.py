@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
     'api.apps.ApiConfig',
 ]
 
@@ -162,4 +163,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MAX_EMAILFIELD_LENGTH = 254
 
-MAX_CHARFIELD_LENGTH = 150
+MAX_USERS_CHARFIELD_LENGTH = 150
+
+MAX_RECIPES_CHARFIELD_LENGTH = 200
+
+MAX_COLORFIELD_LENGTH = 7
+
+MIN_ACCEPTABLE_VALUE = 1
