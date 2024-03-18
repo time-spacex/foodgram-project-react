@@ -1,12 +1,14 @@
-from rest_framework import status, permissions, pagination, exceptions, viewsets, filters
+from rest_framework import status, permissions, pagination, exceptions, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
 from recipes.models import Tag, Ingredient
 from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer
+from .filters import IngredientFilter
 
 
 class CustomUserViewSet(UserViewSet):
@@ -68,5 +70,5 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
     pagination_class = None
     permission_classes = (permissions.AllowAny,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('^name')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
