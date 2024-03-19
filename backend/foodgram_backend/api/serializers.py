@@ -1,8 +1,21 @@
+import base64
+
+from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from rest_framework import serializers, status
 
 from users.models import CustomUser
-from recipes.models import Recipe, Tag, Ingredient
+from recipes.models import Recipe, Tag, Ingredient, IngredientsInRecipe
+
+
+class Base64ImageField(serializers.ImageField):
+    """Класс для получения изборажения."""
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')  
+            ext = format.split('/')[-1]  
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+        return super().to_internal_value(data)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -94,8 +107,34 @@ class IngredientSerializer(serializers.ModelSerializer):
         )
 
 
+class IngredientInRecipeSerializer(serializers.ModelSerializer):
+
+    id = serializers.PrimaryKeyRelatedField(
+        source='ingredient',
+        queryset=Ingredient.objects.all()
+    )
+    name = serializers.StringRelatedField(source='ingredient.name')
+    measurement_unit = serializers.StringRelatedField(source='ingredient.measurement_unit')
+
+    class Meta:
+        model = IngredientsInRecipe
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+            'amount',
+        )
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатов для рецептов."""
+
+    tags = TagSerializer(many=True)
+    author = UserSerializer()
+    ingredients = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -111,3 +150,16 @@ class RecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
+
+    def get_is_favorited(self, obj):
+
+        return False
+
+    def get_is_in_shopping_cart(self, obj):
+
+        return False
+
+    def get_ingredients(self, obj):
+        """Метод для отображения поля ингредиентов."""
+        queryset = obj.ingredients_in_recipe.all()
+        return IngredientInRecipeSerializer(queryset, many=True).data

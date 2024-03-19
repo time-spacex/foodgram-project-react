@@ -6,9 +6,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
-from recipes.models import Tag, Ingredient
-from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer
+from recipes.models import Tag, Ingredient, Recipe
+from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer, RecipeSerializer
 from .filters import IngredientFilter
+from .permissions import IsAdminAuthorOrReadOnly
 
 
 class CustomUserViewSet(UserViewSet):
@@ -72,3 +73,12 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
+
+class RecipesViewSet(viewsets.ModelViewSet):
+    """Представление для рецептов."""
+
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = (IsAdminAuthorOrReadOnly,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    pagination_class = pagination.LimitOffsetPagination
