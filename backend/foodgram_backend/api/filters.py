@@ -1,6 +1,6 @@
 import django_filters
 
-from recipes.models import Ingredient
+from recipes.models import Ingredient, Recipe
 
 
 class IngredientFilter(django_filters.FilterSet):
@@ -11,3 +11,27 @@ class IngredientFilter(django_filters.FilterSet):
     class Meta:
         model = Ingredient
         fields = ('name',)
+
+
+class RecipeFilter(django_filters.FilterSet):
+    """Кастомный фильтр для представления рецептов."""
+
+    tags = django_filters.CharFilter(field_name='tags__slug', lookup_expr='exact')
+    is_favorited = django_filters.NumberFilter(field_name='favorites', method='filter_is_favorited')
+    is_in_shopping_cart = django_filters.NumberFilter(field_name='shopping_cart', method='filter_is_in_shopping_cart')
+
+    class Meta:
+        model = Recipe
+        fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
+
+    def filter_is_favorited(self, queryset, name, value):
+        """Метод обработки фильтрации избранных рецептов."""
+        if value == 1:
+            return self.request.user.favorites.all()
+        return queryset
+
+    def filter_is_in_shopping_cart(self, queryset, name, value):
+        """Метод обработки фильтрации рецептов в списке покупок."""
+        if value == 1:
+            return self.request.user.shopping_cart.all()
+        return queryset

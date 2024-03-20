@@ -8,7 +8,7 @@ from djoser.views import UserViewSet
 from users.models import CustomUser
 from recipes.models import Tag, Ingredient, Recipe
 from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer, RecipeSerializer
-from .filters import IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnly
 
 
@@ -82,3 +82,5 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminAuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
     pagination_class = pagination.LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
