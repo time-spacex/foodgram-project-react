@@ -7,7 +7,7 @@ from djoser.views import UserViewSet
 
 from users.models import CustomUser
 from recipes.models import Tag, Ingredient, Recipe
-from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer, RecipeSerializer
+from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer, RecipeSerializer, RecipeEditSerializer
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnly
 
@@ -84,3 +84,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        """Метод для получения сериализатора."""
+        http_edit_methodes = ['post', 'patch', 'delete']
+        if self.request.method in http_edit_methodes:
+            return RecipeEditSerializer
+        return super().get_serializer_class()

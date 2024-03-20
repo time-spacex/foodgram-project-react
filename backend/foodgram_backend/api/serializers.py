@@ -152,14 +152,30 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
-
-        return False
+        """Метод отображения поля избранных рецептов."""
+        return obj in self.context.get('request').user.favorites.all()
 
     def get_is_in_shopping_cart(self, obj):
-
-        return False
+        """Метод отображения поля рецептов в списке покупок."""
+        return obj in self.context.get('request').user.shopping_cart.all()
 
     def get_ingredients(self, obj):
         """Метод для отображения поля ингредиентов."""
         queryset = obj.ingredients_in_recipe.all()
         return IngredientInRecipeSerializer(queryset, many=True).data
+
+
+class RecipeEditSerializer(serializers.ModelSerializer):
+
+    image = Base64ImageField(required=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'ingredients',
+            'tags',
+            'image',
+            'name',
+            'text',
+            'cooking_time',
+        )
