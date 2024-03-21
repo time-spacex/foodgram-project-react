@@ -153,11 +153,15 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         """Метод отображения поля избранных рецептов."""
-        return obj in self.context.get('request').user.favorites.all()
+        if self.context.get('request').user.is_authenticated:
+            return obj in self.context.get('request').user.favorites.all()
+        return False
 
     def get_is_in_shopping_cart(self, obj):
         """Метод отображения поля рецептов в списке покупок."""
-        return obj in self.context.get('request').user.shopping_cart.all()
+        if self.context.get('request').user.is_authenticated:
+            return obj in self.context.get('request').user.shopping_cart.all()
+        return False
 
     def get_ingredients(self, obj):
         """Метод для отображения поля ингредиентов."""
@@ -200,7 +204,6 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         validated_data['author'] = self.context.get('request').user
         recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
-            #recipe.ingredients_in_recipe.get_or_create(ingredient_id=ingredient.get('ingredient_id'), amount=ingredient.get('amount'))
             recipe.ingredients_in_recipe.get_or_create(**ingredient)
         for tag in tags:
             recipe.tags.add(tag)
