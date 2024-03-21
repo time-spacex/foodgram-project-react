@@ -92,5 +92,5 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipeEditSerializer
         return super().get_serializer_class()
 
-    def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
+    '''def perform_create(self, serializer):
+        return serializer.save(author=self.request.user)'''

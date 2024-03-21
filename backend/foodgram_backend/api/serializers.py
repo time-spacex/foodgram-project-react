@@ -165,9 +165,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         return IngredientInRecipeSerializer(queryset, many=True).data
 
 
+class IngredientInRecipeEditSerializer(serializers.ModelSerializer):
+
+    id = serializers.IntegerField(source='ingredient_id')
+
+    class Meta:
+        model = IngredientsInRecipe
+        fields = (
+            'id',
+            'amount',
+        )
+
+
 class RecipeEditSerializer(serializers.ModelSerializer):
 
-    ingredients = IngredientInRecipeSerializer(many=True)
+    ingredients = IngredientInRecipeEditSerializer(many=True)
     image = Base64ImageField(required=True)
 
     class Meta:
@@ -188,6 +200,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         validated_data['author'] = self.context.get('request').user
         recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
+            #recipe.ingredients_in_recipe.get_or_create(ingredient_id=ingredient.get('ingredient_id'), amount=ingredient.get('amount'))
             recipe.ingredients_in_recipe.get_or_create(**ingredient)
         for tag in tags:
             recipe.tags.add(tag)
