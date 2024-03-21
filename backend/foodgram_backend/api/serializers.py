@@ -167,6 +167,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class RecipeEditSerializer(serializers.ModelSerializer):
 
+    ingredients = IngredientInRecipeSerializer(many=True)
     image = Base64ImageField(required=True)
 
     class Meta:
@@ -179,3 +180,16 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
+
+    def create(self, validated_data):
+        """Метод создает объект рецепта."""
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        validated_data['author'] = self.context.get('request').user
+        recipe = Recipe.objects.create(**validated_data)
+        for ingredient in ingredients:
+            recipe.ingredients_in_recipe.get_or_create(**ingredient)
+        for tag in tags:
+            recipe.tags.add(tag)
+        recipe.save()
+        return recipe

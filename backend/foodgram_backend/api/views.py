@@ -81,13 +81,16 @@ class RecipesViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (IsAdminAuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
+    http_edit_methodes = ['POST', 'PATCH', 'DELETE']
     pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         """Метод для получения сериализатора."""
-        http_edit_methodes = ['post', 'patch', 'delete']
-        if self.request.method in http_edit_methodes:
+        if self.request.method in self.http_edit_methodes:
             return RecipeEditSerializer
         return super().get_serializer_class()
+
+    def perform_create(self, serializer):
+        return serializer.save(author=self.request.user)
