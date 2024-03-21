@@ -201,7 +201,6 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         """Метод создает объект рецепта."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        validated_data['author'] = self.context.get('request').user
         recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
             recipe.ingredients_in_recipe.get_or_create(**ingredient)

@@ -80,17 +80,26 @@ class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAdminAuthorOrReadOnly,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    http_edit_methodes = ['POST', 'PATCH', 'DELETE']
+    http_method_names = ['get',]
+    #http_method_names = ['get', 'post', 'patch', 'delete']
+    #http_edit_methodes = ['POST', 'PATCH', 'DELETE']
     pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def get_serializer_class(self):
+    '''def get_serializer_class(self):
         """Метод для получения сериализатора."""
         if self.request.method in self.http_edit_methodes:
             return RecipeEditSerializer
-        return super().get_serializer_class()
+        return super().get_serializer_class()'''
 
-    '''def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)'''
+
+class RecipeEditViewSet(APIView):
+
+    permission_classes = (IsAdminAuthorOrReadOnly,)
+
+    def post(self, request):
+        serializer = RecipeEditSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
