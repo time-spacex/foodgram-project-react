@@ -182,9 +182,11 @@ class IngredientInRecipeEditSerializer(serializers.ModelSerializer):
 
 
 class RecipeEditSerializer(serializers.ModelSerializer):
-
     ingredients = IngredientInRecipeEditSerializer(many=True)
-    image = Base64ImageField(required=True)
+
+    # FIX: для теста сделал необязательным.
+    # image = Base64ImageField(required=True)
+    image = Base64ImageField(required=False)
 
     class Meta:
         model = Recipe
@@ -208,3 +210,34 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             recipe.tags.add(tag)
         recipe.save()
         return recipe
+
+    def to_representation(self, obj):
+        # FIX: данные для редактирования приходят в одном формате, а отдать
+        # их надо в другом формате.
+
+        # Т.к. если мы обычный Recipe засунем в этот сериалайзер.
+        # RecipeEditSerializer(instance=recipe), то в объявленное нами
+        # поле ingredients, попадет recipe.ingredients,
+        # а там объекты Ingredient, а у объекта Ingredient нет атрибута
+        # ingredient_id, который мы указали, как источник для id
+        # в сериалайзере IngredientInRecipeEditSerializer
+        # id = serializers.IntegerField(source='ingredient_id')
+
+        # Поэтому убираем проблемное поле. Чтобы не ломать сериализатор.
+        self.fields.pop('ingredients')
+
+        # Аналогично и для тэгов.
+        # Убираем проблемное, ставим свое поле.
+        self.fields['tags'] = TagSerializer(many=True)
+
+        # Здесь будет уже OrderedDict с данными.
+        representation = super().to_representation(obj)
+
+        # В него и впихиваем, как в обычный словарь
+        # ингредиенты в нужном нам формате. Подменить так, как с тэгами не
+        # прокатит, т.к. мы поле явно объявили в сериализаторе, как атрибут.
+        representation['ingredients'] = IngredientInRecipeSerializer(
+            IngredientsInRecipe.objects.filter(recipe=obj).all(), many=True
+        ).data
+
+        return representation
