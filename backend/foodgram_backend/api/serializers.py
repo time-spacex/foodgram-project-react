@@ -204,24 +204,41 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        """Метод создает объект рецепта."""
+        """Метод создания рецепта."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
-            recipe.ingredients_in_recipe.get_or_create(**ingredient)
+            recipe.ingredients_in_recipe.create(**ingredient)
         for tag in tags:
             recipe.tags.add(tag)
         recipe.save()
         return recipe
+    
+    def update(self, instance, validated_data):
+        """Метод обновления рецептов."""
+        instance.tags.set(validated_data.get('tags'), clear=True)
+        instance.ingredients.clear()
+        for ingredient in validated_data.get('ingredients'):
+            instance.ingredients_in_recipe.create(**ingredient)
+        instance.image = validated_data.get('image', instance.image)
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
+        instance.save()
+        return instance
 
     def get_is_favorited(self, obj):
+        """Метод поля избранных рецептов."""
         user = self.context.get('request').user
         if user.is_authenticated and user in obj.favorites.all():
             return True
         return False
 
     def get_is_in_shopping_cart(self, obj):
+        """Метод поля рецептов в корзине покупок."""
         user = self.context.get('request').user
         if user.is_authenticated and user in obj.shopping_cart.all():
             return True

@@ -94,14 +94,3 @@ class RecipesViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-
-'''class RecipeEditViewSet(APIView):
-
-    permission_classes = (IsAdminAuthorOrReadOnly,)
-
-    def post(self, request):
-        serializer = RecipeEditSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(author=self.request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)'''
