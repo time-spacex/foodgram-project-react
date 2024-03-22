@@ -170,6 +170,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientInRecipeEditSerializer(serializers.ModelSerializer):
+    """Сериализатор ингредиентов для редактирования рецептов."""
 
     id = serializers.IntegerField(source='ingredient_id')
 
@@ -182,9 +183,12 @@ class IngredientInRecipeEditSerializer(serializers.ModelSerializer):
 
 
 class RecipeEditSerializer(serializers.ModelSerializer):
+    """Сериализатор для редактирования рецептов."""
 
     ingredients = IngredientInRecipeEditSerializer(many=True)
     image = Base64ImageField(required=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -195,6 +199,8 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             'name',
             'text',
             'cooking_time',
+            'is_favorited',
+            'is_in_shopping_cart',
         )
 
     def create(self, validated_data):
@@ -208,6 +214,18 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             recipe.tags.add(tag)
         recipe.save()
         return recipe
+
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated and user in obj.favorites.all():
+            return True
+        return False
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        if user.is_authenticated and user in obj.shopping_cart.all():
+            return True
+        return False
 
     def to_representation(self, obj):
         """Метод изменения выходных данных сериализатора."""

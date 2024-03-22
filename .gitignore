@@ -132,4 +132,3 @@ dmypy.json
 .idea
 
 backend/foodgram_backend/sent_emails/
-.vscode
