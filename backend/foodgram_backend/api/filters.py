@@ -1,6 +1,6 @@
 import django_filters
 
-from recipes.models import Ingredient, Recipe
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilter(django_filters.FilterSet):
@@ -16,7 +16,11 @@ class IngredientFilter(django_filters.FilterSet):
 class RecipeFilter(django_filters.FilterSet):
     """Кастомный фильтр для представления рецептов."""
 
-    tags = django_filters.CharFilter(field_name='tags__slug', lookup_expr='exact')
+    tags = django_filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all()
+        )
     is_favorited = django_filters.NumberFilter(field_name='favorites', method='filter_is_favorited')
     is_in_shopping_cart = django_filters.NumberFilter(field_name='shopping_cart', method='filter_is_in_shopping_cart')
 
