@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
-from rest_framework import serializers, status
+from rest_framework import serializers, status, validators
 
 from users.models import CustomUser
 from recipes.models import Recipe, Tag, Ingredient, IngredientsInRecipe
@@ -185,7 +185,8 @@ class IngredientInRecipeEditSerializer(serializers.ModelSerializer):
 class RecipeEditSerializer(serializers.ModelSerializer):
     """Сериализатор для редактирования рецептов."""
 
-    ingredients = IngredientInRecipeEditSerializer(many=True)
+    ingredients = IngredientInRecipeEditSerializer(
+        many=True, allow_null=False, allow_empty=False)
     image = Base64ImageField(required=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -202,6 +203,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
         )
+
 
     def create(self, validated_data):
         """Метод создания рецепта."""
@@ -255,3 +257,18 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             obj.ingredients_in_recipe.all(), many=True
         ).data
         return representation
+
+    def validate_ingredients(self, value):
+        """Метод валидации поля ингредиентов."""
+        try:
+            ingredients_items = []
+            for ingredient in value:
+                if ingredient not in ingredients_items:
+                    ingredients_items.append(ingredient)
+                    Ingredient.objects.get(id=ingredient.get('ingredient_id'))
+                else:
+                    raise serializers.ValidationError(
+                        'В рецепт добавлены повторяющиеся ингредиенты')
+            return value
+        except Ingredient.DoesNotExist:
+            raise serializers.ValidationError('Данного ингредиента не существует')
