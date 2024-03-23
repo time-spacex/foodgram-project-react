@@ -272,3 +272,14 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             return value
         except Ingredient.DoesNotExist:
             raise serializers.ValidationError('Данного ингредиента не существует')
+
+    def validate_tags(self, value):
+        """Метод валидации поля тегов."""
+        tags_items = []
+        for tag in value:
+            if tag not in tags_items:
+                tags_items.append(tag)
+            else:
+                raise serializers.ValidationError(
+                        'В рецепт добавлены повторяющиеся теги')
+        return value
