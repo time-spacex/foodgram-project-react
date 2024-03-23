@@ -219,7 +219,9 @@ class RecipeEditSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         """Метод обновления рецептов."""
+        self.validate_tags(validated_data.get('tags'))
         instance.tags.set(validated_data.get('tags'), clear=True)
+        self.validate_ingredients(validated_data.get('ingredients'))
         instance.ingredients.clear()
         for ingredient in validated_data.get('ingredients'):
             instance.ingredients_in_recipe.create(**ingredient)
@@ -272,14 +274,19 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             return value
         except Ingredient.DoesNotExist:
             raise serializers.ValidationError('Данного ингредиента не существует')
+        except TypeError:
+            raise serializers.ValidationError('Неправильный формат данных ингредиентов')
 
     def validate_tags(self, value):
         """Метод валидации поля тегов."""
-        tags_items = []
-        for tag in value:
-            if tag not in tags_items:
-                tags_items.append(tag)
-            else:
-                raise serializers.ValidationError(
-                        'В рецепт добавлены повторяющиеся теги')
+        try:
+            tags_items = []
+            for tag in value:
+                if tag not in tags_items:
+                    tags_items.append(tag)
+                else:
+                    raise serializers.ValidationError(
+                            'В рецепт добавлены повторяющиеся теги')
+        except TypeError:
+            raise serializers.ValidationError('Неправильный формат данных тегов')
         return value
