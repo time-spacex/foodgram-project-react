@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from rest_framework import serializers, status, validators
 
-from users.models import CustomUser
+from users.models import CustomUser, Subscription
 from recipes.models import Recipe, Tag, Ingredient, IngredientsInRecipe
 
 
@@ -80,6 +80,23 @@ class UserSerializer(serializers.ModelSerializer):
             if self.context.user.id == subscriber.subscriber_id:
                 return True
         return False
+
+
+class SubscriptionSerializer(serializers.Serializer):
+
+    def update(self, instance, validated_data):
+        for subscriprion in self.context.user.subscriptions.all():
+            if instance == subscriprion.subscribed_to:
+                raise serializers.ValidationError(
+                    'Данный пользователь уже добавлен в подписки')
+        Subscription.objects.create(
+            subscriber=self.context.user,
+            subscribed_to=instance
+        )
+        return instance
+
+    def to_representation(self, instance):
+        return UserSerializer(instance).data
 
 
 class TagSerializer(serializers.ModelSerializer):

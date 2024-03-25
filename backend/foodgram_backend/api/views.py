@@ -13,6 +13,7 @@ from recipes.models import IngredientsInRecipe, Tag, Ingredient, Recipe
 from .serializers import (
     FavoriteSerializer,
     SignUpSerializer,
+    SubscriptionSerializer,
     UserSerializer,
     TagSerializer,
     IngredientSerializer,
@@ -29,7 +30,7 @@ class CustomUserViewSet(UserViewSet):
 
     permission_classes = (permissions.AllowAny,)
     pagination_class = pagination.LimitOffsetPagination
-    http_method_names = ['get', 'post']
+    http_method_names = ['get', 'post', 'delete']
 
     def create(self, request):
         """Метод API для создания новых пользователей."""
@@ -63,6 +64,33 @@ class CustomUserViewSet(UserViewSet):
         if self.request.user.is_authenticated:
             return self.request.user
         raise exceptions.AuthenticationFailed()
+
+    @action(
+        detail=False,
+        methods=['post', 'delete'],
+        permission_classes=(permissions.IsAuthenticated,),
+        url_path=r'(?P<user_id>\d+)/subscribe',
+    )
+    def subscribe(self, request, user_id):
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError(
+                'Данного пользователя не существует.')
+        if self.request.method == 'POST':
+            serializer = SubscriptionSerializer(
+                    instance=user,
+                    data=request.data,
+                    context=request
+                )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if self.request.method == 'DELETE':
+            for subscriprion in request.user.subscriptions.all():
+                if subscriprion.subscribed_to == user:
+                    subscriprion.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
