@@ -290,3 +290,19 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         except TypeError:
             raise serializers.ValidationError('Неправильный формат данных тегов')
         return value
+
+
+class ShoppingCartSerializer(serializers.Serializer):
+    """Сериализатор для списка покупок."""
+
+    def update(self, instance, validated_data):
+        self.context.user.shopping_cart.add(instance)
+        return instance
+
+    def to_representation(self, obj):
+        representation = super().to_representation(obj)
+        representation['id'] = obj.id
+        representation['name'] = obj.name
+        representation['image'] = obj.image.url
+        representation['cooking_time'] = obj.cooking_time
+        return representation

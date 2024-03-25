@@ -1,13 +1,22 @@
+from django.http import HttpResponse
 from rest_framework import status, permissions, pagination, exceptions, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import permission_classes, api_view
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
 from recipes.models import Tag, Ingredient, Recipe
-from .serializers import SignUpSerializer, UserSerializer, TagSerializer, IngredientSerializer, RecipeSerializer, RecipeEditSerializer
+from .serializers import (
+    SignUpSerializer,
+    UserSerializer,
+    TagSerializer,
+    IngredientSerializer,
+    RecipeSerializer,
+    RecipeEditSerializer,
+    ShoppingCartSerializer
+)
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnly
 
@@ -74,6 +83,7 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
 
+
 class RecipesViewSet(viewsets.ModelViewSet):
     """Представление для рецептов."""
 
@@ -94,3 +104,52 @@ class RecipesViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(
+        detail=False,
+        methods=['post', 'delete'],
+        permission_classes=(permissions.IsAuthenticated,),
+        url_path=r'(?P<recipe_id>\d+)/shopping_cart',
+        url_name='add_delete_from_sopping_cart'
+    )
+    def add_delete_from_sopping_cart(self, request, recipe_id):
+        recipe = Recipe.objects.get(id=recipe_id)
+        if self.request.method == 'POST':
+            serializer = ShoppingCartSerializer(
+                instance=recipe,
+                data=request.data,
+                context=request)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if self.request.method == 'DELETE':
+            request.user.shopping_cart.remove(recipe)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+'''class ShoppingCartViewSet(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+    http_method_names = ['get', 'post', 'delete']
+
+    def get(self, request):
+        shopping_cart = request.user.shopping_cart.all()
+        response = HttpResponse(
+            shopping_cart,
+            headers={
+            "Content-Type": "application/vnd.ms-excel",
+            "Content-Disposition": 'attachment; filename="foo.xls"',
+            },
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
+    def post(self, request, recipe_id):
+        recipe = Recipe.objects.get(id=recipe_id)
+        serializer = ShoppingCartSerializer(
+            instance=recipe,
+            data=request.data,
+            context=request)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)'''
