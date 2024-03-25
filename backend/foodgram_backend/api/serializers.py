@@ -298,7 +298,8 @@ class ShoppingCartSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         """Метод добавления рецептов в корзину покупок."""
         if instance in self.context.user.shopping_cart.all():
-            raise serializers.ValidationError('Данный рецепт уже добавлен в корзину')
+            raise serializers.ValidationError(
+                'Данный рецепт уже добавлен в корзину')
         self.context.user.shopping_cart.add(instance)
         return instance
 
@@ -310,3 +311,19 @@ class ShoppingCartSerializer(serializers.Serializer):
         representation['image'] = obj.image.url
         representation['cooking_time'] = obj.cooking_time
         return representation
+
+
+class FavoriteSerializer(serializers.Serializer):
+    """Сериализатор для добавления рецептов в избранное."""
+
+    def update(self, instance, validated_data):
+        """Метод добавления рецептов в избранное."""
+        if instance in self.context.user.favorites.all():
+            raise serializers.ValidationError(
+                'Данный рецепт уже добавлен в избранное')
+        self.context.user.favorites.add(instance)
+        return instance
+    
+    def to_representation(self, instance):
+        """Метод представления добавленных рецептов."""
+        return ShoppingCartSerializer(instance).data

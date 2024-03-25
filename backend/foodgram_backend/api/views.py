@@ -11,6 +11,7 @@ from djoser.views import UserViewSet
 from users.models import CustomUser
 from recipes.models import IngredientsInRecipe, Tag, Ingredient, Recipe
 from .serializers import (
+    FavoriteSerializer,
     SignUpSerializer,
     UserSerializer,
     TagSerializer,
@@ -163,3 +164,29 @@ class RecipesViewSet(viewsets.ModelViewSet):
             },
         )
         return response
+
+    @action(
+        detail=False,
+        methods=['post', 'delete'],
+        permission_classes=(permissions.IsAuthenticated,),
+        url_path=r'(?P<recipe_id>\d+)/favorite',
+        url_name='add_delete_from_favorites'
+    )
+    def add_delete_from_favorites(self, request, recipe_id):
+        """Метод для добавления и удаления рецепта в избранное."""
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            raise serializers.ValidationError('Данного рецепта не существует.')
+        if self.request.method == 'POST':
+            serializer = FavoriteSerializer(
+                instance=recipe,
+                data=request.data,
+                context=request
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if self.request.method == 'DELETE':
+            request.user.favorites.remove(recipe)
+            return Response(status=status.HTTP_204_NO_CONTENT)
