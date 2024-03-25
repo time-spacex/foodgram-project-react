@@ -297,6 +297,8 @@ class ShoppingCartSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         """Метод добавления рецептов в корзину покупок."""
+        if instance in self.context.user.shopping_cart.all():
+            raise serializers.ValidationError('Данный рецепт уже добавлен в корзину')
         self.context.user.shopping_cart.add(instance)
         return instance
 

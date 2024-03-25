@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.db.models import Sum
-from rest_framework import status, permissions, pagination, exceptions, viewsets
+from rest_framework import (
+    status, permissions, pagination, exceptions, viewsets, serializers)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -116,7 +117,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def add_delete_from_sopping_cart(self, request, recipe_id):
         """Метод добавления и удаления рецептов в корзину покупок."""
-        recipe = Recipe.objects.get(id=recipe_id)
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            raise serializers.ValidationError('Данного рецепта не существует.')
         if self.request.method == 'POST':
             serializer = ShoppingCartSerializer(
                 instance=recipe,
