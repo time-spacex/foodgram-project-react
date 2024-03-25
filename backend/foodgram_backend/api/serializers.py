@@ -296,10 +296,12 @@ class ShoppingCartSerializer(serializers.Serializer):
     """Сериализатор для списка покупок."""
 
     def update(self, instance, validated_data):
+        """Метод добавления рецептов в корзину покупок."""
         self.context.user.shopping_cart.add(instance)
         return instance
 
     def to_representation(self, obj):
+        """Метод представления добавленных рецептов."""
         representation = super().to_representation(obj)
         representation['id'] = obj.id
         representation['name'] = obj.name

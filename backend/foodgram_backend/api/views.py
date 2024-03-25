@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.db.models import Sum
 from rest_framework import status, permissions, pagination, exceptions, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import IngredientsInRecipe, Tag, Ingredient, Recipe
 from .serializers import (
     SignUpSerializer,
     UserSerializer,
@@ -103,6 +104,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
     
     def perform_create(self, serializer):
+        """Метод сохранения рецепта."""
         serializer.save(author=self.request.user)
 
     @action(
@@ -113,6 +115,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         url_name='add_delete_from_sopping_cart'
     )
     def add_delete_from_sopping_cart(self, request, recipe_id):
+        """Метод добавления и удаления рецептов в корзину покупок."""
         recipe = Recipe.objects.get(id=recipe_id)
         if self.request.method == 'POST':
             serializer = ShoppingCartSerializer(
@@ -126,30 +129,33 @@ class RecipesViewSet(viewsets.ModelViewSet):
             request.user.shopping_cart.remove(recipe)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-'''class ShoppingCartViewSet(APIView):
-
-    permission_classes = (permissions.IsAuthenticated,)
-    http_method_names = ['get', 'post', 'delete']
-
-    def get(self, request):
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=(permissions.IsAuthenticated,),
+        url_path='download_shopping_cart',
+        url_name='download_shopping_cart'
+    )
+    def download_from_shopping_cart(self, request):
+        """Метод получения списка покупок."""
         shopping_cart = request.user.shopping_cart.all()
+        recipes_ids = [recipe.id for recipe in shopping_cart]
+        purchase = IngredientsInRecipe.objects.filter(
+            recipe_id__in=recipes_ids,
+        ).values('ingredient_id').annotate(buy_amount=Sum('amount'))
+        purchase_data = 'Ваш список покупок: '
+        for buy_item in purchase:
+            ingredient = Ingredient.objects.get(pk=buy_item.get('ingredient_id'))
+            purchase_data += (
+                ingredient.name + ', '
+                + str(buy_item.get('buy_amount'))
+                + ' ' + ingredient.measurement_unit + '; '
+            )
         response = HttpResponse(
-            shopping_cart,
+            purchase_data,
             headers={
-            "Content-Type": "application/vnd.ms-excel",
-            "Content-Disposition": 'attachment; filename="foo.xls"',
+            'Content-Type': 'text/plain',
+            'Content-Disposition': 'attachment; filename="purchase_list.txt"',
             },
         )
-
-        return Response(status=status.HTTP_200_OK)
-
-    def post(self, request, recipe_id):
-        recipe = Recipe.objects.get(id=recipe_id)
-        serializer = ShoppingCartSerializer(
-            instance=recipe,
-            data=request.data,
-            context=request)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)'''
+        return response
