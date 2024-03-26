@@ -102,6 +102,10 @@ class SubscriptionSerializer(serializers.Serializer):
             many=True,
             context=self.context
         ).data
+        query_params = self.context.query_params.get('recipes_limit')
+        if query_params:
+            query_params = int(query_params)
+            recipe_data = recipe_data[0:query_params]
         return_data = {
             **user_data,
             'recipes': recipe_data,
