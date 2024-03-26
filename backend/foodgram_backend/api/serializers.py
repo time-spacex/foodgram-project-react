@@ -96,7 +96,18 @@ class SubscriptionSerializer(serializers.Serializer):
         return instance
 
     def to_representation(self, instance):
-        return UserSerializer(instance).data
+        user_data = UserSerializer(instance=instance, context=self.context).data
+        recipe_data = FavoriteSerializer(
+            instance=instance.recipes.all(),
+            many=True,
+            context=self.context
+        ).data
+        return_data = {
+            **user_data,
+            'recipes': recipe_data,
+            'recipes_count': len(recipe_data)
+        }
+        return return_data
 
 
 class TagSerializer(serializers.ModelSerializer):
