@@ -2,7 +2,6 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework import (
     status, permissions, pagination, exceptions, viewsets, serializers)
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
@@ -74,6 +73,7 @@ class CustomUserViewSet(UserViewSet):
         url_name='add_delete_subscription',
     )
     def subscribe(self, request, user_id):
+        """Метод создания и удаления подписок."""
         try:
             user = CustomUser.objects.get(pk=user_id)
         except CustomUser.DoesNotExist:
@@ -103,11 +103,21 @@ class CustomUserViewSet(UserViewSet):
         url_name='get_subscriptions',
     )
     def get_subscriptions(self, request):
+        """Метод получения списка подписок."""
         subscribed_to_queryset = CustomUser.objects.filter(
             id__in=(
                 request.user.subscriptions.all().values('subscribed_to')
             )
         )
+        queryset = self.filter_queryset(subscribed_to_queryset)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = SubscriptionGetSerializer(
+                page,
+                context={'request': request},
+                many=True
+            )
+            return self.get_paginated_response(serializer.data)
         serializer = SubscriptionGetSerializer(
             subscribed_to_queryset,
             context={'request': request},

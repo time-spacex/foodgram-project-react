@@ -83,8 +83,10 @@ class UserSerializer(serializers.ModelSerializer):
         return False
 
 class SubscriptionSerializer(serializers.Serializer):
+    """Сериализатор для создания подписок."""
 
     def update(self, instance, validated_data):
+        """Метод создания опдписки на пользователя."""
         for subscriprion in self.context.get('request').user.subscriptions.all():
             if instance == subscriprion.subscribed_to:
                 raise serializers.ValidationError(
@@ -96,6 +98,7 @@ class SubscriptionSerializer(serializers.Serializer):
         return instance
 
     def to_representation(self, instance):
+        """Метод представления созданной подписки."""
         user_data = UserSerializer(instance=instance, context=self.context).data
         recipe_data = FavoriteSerializer(
             instance=instance.recipes.all(),
@@ -115,9 +118,10 @@ class SubscriptionSerializer(serializers.Serializer):
 
 
 class SubscriptionGetSerializer(serializers.Serializer):
+    """Сериализатор для получения списка подписок."""
 
     def to_representation(self, instance):
-
+        """Метод представления списка подписок."""
         ret = SubscriptionSerializer(
             instance,
             context=self.context,
