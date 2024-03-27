@@ -74,23 +74,23 @@ class UserSerializer(serializers.ModelSerializer):
             'is_subscribed',
         )
 
+
     def get_is_subscribed(self, obj):
         """Метод для отображения поля подписок."""
         for subscriber in obj.subscribers.all():
-            if self.context.user.id == subscriber.subscriber_id:
+            if self.context.get('request').user.id == subscriber.subscriber_id:
                 return True
         return False
-
 
 class SubscriptionSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
-        for subscriprion in self.context.user.subscriptions.all():
+        for subscriprion in self.context.get('request').user.subscriptions.all():
             if instance == subscriprion.subscribed_to:
                 raise serializers.ValidationError(
                     'Данный пользователь уже добавлен в подписки')
         Subscription.objects.create(
-            subscriber=self.context.user,
+            subscriber=self.context.get('request').user,
             subscribed_to=instance
         )
         return instance
@@ -102,7 +102,7 @@ class SubscriptionSerializer(serializers.Serializer):
             many=True,
             context=self.context
         ).data
-        query_params = self.context.query_params.get('recipes_limit')
+        query_params = self.context.get('request').query_params.get('recipes_limit')
         if query_params:
             query_params = int(query_params)
             recipe_data = recipe_data[0:query_params]
@@ -340,10 +340,10 @@ class ShoppingCartSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         """Метод добавления рецептов в корзину покупок."""
-        if instance in self.context.user.shopping_cart.all():
+        if instance in self.context.get('request').user.shopping_cart.all():
             raise serializers.ValidationError(
                 'Данный рецепт уже добавлен в корзину')
-        self.context.user.shopping_cart.add(instance)
+        self.context.get('request').user.shopping_cart.add(instance)
         return instance
 
     def to_representation(self, obj):
@@ -361,10 +361,10 @@ class FavoriteSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         """Метод добавления рецептов в избранное."""
-        if instance in self.context.user.favorites.all():
+        if instance in self.context.get('request').user.favorites.all():
             raise serializers.ValidationError(
                 'Данный рецепт уже добавлен в избранное')
-        self.context.user.favorites.add(instance)
+        self.context.get('request').user.favorites.add(instance)
         return instance
     
     def to_representation(self, instance):

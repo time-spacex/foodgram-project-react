@@ -49,9 +49,9 @@ class CustomUserViewSet(UserViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(self.get_queryset())
         if page is not None:
-            serializer = UserSerializer(page, many=True, context=request)
+            serializer = UserSerializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
-        serializer = UserSerializer(queryset, many=True, context=request)
+        serializer = UserSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
@@ -83,7 +83,7 @@ class CustomUserViewSet(UserViewSet):
             serializer = SubscriptionSerializer(
                 instance=user,
                 data=request.data,
-                context=request
+                context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -110,7 +110,7 @@ class CustomUserViewSet(UserViewSet):
         )
         serializer = SubscriptionGetSerializer(
             subscribed_to_queryset,
-            context=request,
+            context={'request': request},
             many=True
         )
         return Response(serializer.data)
@@ -177,7 +177,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             serializer = ShoppingCartSerializer(
                 instance=recipe,
                 data=request.data,
-                context=request)
+                context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -233,7 +233,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             serializer = FavoriteSerializer(
                 instance=recipe,
                 data=request.data,
-                context=request
+                context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
