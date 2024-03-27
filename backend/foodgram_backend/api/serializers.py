@@ -87,6 +87,9 @@ class SubscriptionSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         """Метод создания опдписки на пользователя."""
+        if instance ==  self.context.get('request').user:
+            raise serializers.ValidationError(
+                    'Невозможно оформить подписку на свой профиль.')
         for subscriprion in self.context.get('request').user.subscriptions.all():
             if instance == subscriprion.subscribed_to:
                 raise serializers.ValidationError(
