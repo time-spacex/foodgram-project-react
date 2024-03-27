@@ -246,7 +246,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
-            raise serializers.ValidationError('Данного рецепта не существует.')
+            if self.request.method == 'POST':
+                raise serializers.ValidationError('Данного рецепта не существует.')
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if self.request.method == 'POST':
             serializer = FavoriteSerializer(
                 instance=recipe,
@@ -257,5 +259,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if self.request.method == 'DELETE':
+            if recipe not in request.user.favorites.all():
+                raise serializers.ValidationError(
+                    'Данный рецепт не был добавлен в избранное.')
             request.user.favorites.remove(recipe)
             return Response(status=status.HTTP_204_NO_CONTENT)
