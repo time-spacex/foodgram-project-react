@@ -77,8 +77,7 @@ class CustomUserViewSet(UserViewSet):
         try:
             user = CustomUser.objects.get(pk=user_id)
         except CustomUser.DoesNotExist:
-            raise serializers.ValidationError(
-                'Данного пользователя не существует.')
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if self.request.method == 'POST':
             serializer = SubscriptionSerializer(
                 instance=user,
@@ -89,6 +88,9 @@ class CustomUserViewSet(UserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if self.request.method == 'DELETE':
+            if not request.user.subscriptions.all():
+                raise serializers.ValidationError(
+                    'У данного пользователя нет подписок')
             for subscriprion in request.user.subscriptions.all():
                 if subscriprion.subscribed_to == user:
                     subscriprion.delete()
