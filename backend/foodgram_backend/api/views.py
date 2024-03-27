@@ -13,6 +13,7 @@ from recipes.models import IngredientsInRecipe, Tag, Ingredient, Recipe
 from .serializers import (
     FavoriteSerializer,
     SignUpSerializer,
+    SubscriptionGetSerializer,
     SubscriptionSerializer,
     UserSerializer,
     TagSerializer,
@@ -70,6 +71,7 @@ class CustomUserViewSet(UserViewSet):
         methods=['post', 'delete'],
         permission_classes=(permissions.IsAuthenticated,),
         url_path=r'(?P<user_id>\d+)/subscribe',
+        url_name='add_delete_subscription',
     )
     def subscribe(self, request, user_id):
         try:
@@ -79,10 +81,10 @@ class CustomUserViewSet(UserViewSet):
                 'Данного пользователя не существует.')
         if self.request.method == 'POST':
             serializer = SubscriptionSerializer(
-                    instance=user,
-                    data=request.data,
-                    context=request
-                )
+                instance=user,
+                data=request.data,
+                context=request
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -91,6 +93,27 @@ class CustomUserViewSet(UserViewSet):
                 if subscriprion.subscribed_to == user:
                     subscriprion.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=(permissions.IsAuthenticated,),
+        pagination_class = pagination.LimitOffsetPagination,
+        url_path='subscriptions',
+        url_name='get_subscriptions',
+    )
+    def get_subscriptions(self, request):
+        subscribed_to_queryset = CustomUser.objects.filter(
+            id__in=(
+                request.user.subscriptions.all().values('subscribed_to')
+            )
+        )
+        serializer = SubscriptionGetSerializer(
+            subscribed_to_queryset,
+            context=request,
+            many=True
+        )
+        return Response(serializer.data)
 
 
 class TagsViewSet(viewsets.ModelViewSet):

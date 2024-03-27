@@ -114,6 +114,17 @@ class SubscriptionSerializer(serializers.Serializer):
         return return_data
 
 
+class SubscriptionGetSerializer(serializers.Serializer):
+
+    def to_representation(self, instance):
+
+        ret = SubscriptionSerializer(
+            instance,
+            context=self.context,
+        ).data
+        return ret
+
+
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для тегов."""
 
