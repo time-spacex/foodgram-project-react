@@ -27,6 +27,8 @@ class Command(BaseCommand):
                             is_admin=(row[5] == 'True')
                         )
                         Token.objects.get_or_create(user=user)
-                    self.stdout.write(self.style.SUCCESS(f'Users in database successfuly created'))
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Пользователи успешно созданы в базе данных.'))
             else:
-                self.stderr.write(self.style.ERROR(f'File does not exist: {csv_file_path}'))
+                self.stderr.write(self.style.ERROR(
+                    f'Файл отсутствует: {csv_file_path}'))
