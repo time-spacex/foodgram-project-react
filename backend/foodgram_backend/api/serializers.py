@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
-from rest_framework import serializers, status, validators
+from rest_framework import serializers
 
 from users.models import CustomUser, Subscription
 from recipes.models import Recipe, Tag, Ingredient, IngredientsInRecipe
@@ -12,8 +12,8 @@ class Base64ImageField(serializers.ImageField):
     """Класс для получения изборажения."""
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')  
-            ext = format.split('/')[-1]  
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
         return super().to_internal_value(data)
 
@@ -30,7 +30,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             'last_name',
             'password'
         )
-    
+
     def create(self, validated_data):
         """Метод для создания пользователей."""
         send_mail(
@@ -74,7 +74,6 @@ class UserSerializer(serializers.ModelSerializer):
             'is_subscribed',
         )
 
-
     def get_is_subscribed(self, obj):
         """Метод для отображения поля подписок."""
         for subscriber in obj.subscribers.all():
@@ -82,15 +81,19 @@ class UserSerializer(serializers.ModelSerializer):
                 return True
         return False
 
+
 class SubscriptionSerializer(serializers.Serializer):
     """Сериализатор для создания подписок."""
 
     def update(self, instance, validated_data):
         """Метод создания опдписки на пользователя."""
-        if instance ==  self.context.get('request').user:
+        if instance == self.context.get('request').user:
             raise serializers.ValidationError(
-                    'Невозможно оформить подписку на свой профиль.')
-        for subscriprion in self.context.get('request').user.subscriptions.all():
+                'Невозможно оформить подписку на свой профиль.'
+            )
+        for subscriprion in self.context.get(
+            'request'
+        ).user.subscriptions.all():
             if instance == subscriprion.subscribed_to:
                 raise serializers.ValidationError(
                     'Данный пользователь уже добавлен в подписки')
@@ -102,13 +105,18 @@ class SubscriptionSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         """Метод представления созданной подписки."""
-        user_data = UserSerializer(instance=instance, context=self.context).data
+        user_data = UserSerializer(
+            instance=instance,
+            context=self.context
+        ).data
         recipe_data = FavoriteSerializer(
             instance=instance.recipes.all(),
             many=True,
             context=self.context
         ).data
-        query_params = self.context.get('request').query_params.get('recipes_limit')
+        query_params = self.context.get(
+            'request'
+        ).query_params.get('recipes_limit')
         if query_params:
             query_params = int(query_params)
             recipe_data = recipe_data[0:query_params]
@@ -164,7 +172,9 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
         queryset=Ingredient.objects.all()
     )
     name = serializers.StringRelatedField(source='ingredient.name')
-    measurement_unit = serializers.StringRelatedField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.StringRelatedField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = IngredientsInRecipe
@@ -254,7 +264,6 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart',
         )
 
-
     def create(self, validated_data):
         """Метод создания рецепта."""
         ingredients = validated_data.pop('ingredients')
@@ -266,7 +275,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             recipe.tags.add(tag)
         recipe.save()
         return recipe
-    
+
     def update(self, instance, validated_data):
         """Метод обновления рецептов."""
         self.validate_tags(validated_data.get('tags'))
@@ -323,9 +332,13 @@ class RecipeEditSerializer(serializers.ModelSerializer):
                         'В рецепт добавлены повторяющиеся ингредиенты')
             return value
         except Ingredient.DoesNotExist:
-            raise serializers.ValidationError('Данного ингредиента не существует')
+            raise serializers.ValidationError(
+                'Данного ингредиента не существует'
+            )
         except TypeError:
-            raise serializers.ValidationError('Неправильный формат данных ингредиентов')
+            raise serializers.ValidationError(
+                'Неправильный формат данных ингредиентов'
+            )
 
     def validate_tags(self, value):
         """Метод валидации поля тегов."""
@@ -336,9 +349,10 @@ class RecipeEditSerializer(serializers.ModelSerializer):
                     tags_items.append(tag)
                 else:
                     raise serializers.ValidationError(
-                            'В рецепт добавлены повторяющиеся теги')
+                        'В рецепт добавлены повторяющиеся теги')
         except TypeError:
-            raise serializers.ValidationError('Неправильный формат данных тегов')
+            raise serializers.ValidationError(
+                'Неправильный формат данных тегов')
         return value
 
 
@@ -373,7 +387,7 @@ class FavoriteSerializer(serializers.Serializer):
                 'Данный рецепт уже добавлен в избранное')
         self.context.get('request').user.favorites.add(instance)
         return instance
-    
+
     def to_representation(self, instance):
         """Метод представления добавленных рецептов."""
         return ShoppingCartSerializer(instance).data

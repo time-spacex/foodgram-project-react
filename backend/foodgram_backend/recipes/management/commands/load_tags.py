@@ -21,6 +21,8 @@ class Command(BaseCommand):
                             color=row[1],
                             slug=row[2]
                         )
-                    self.stdout.write(self.style.SUCCESS(f'Теги успешно созданы в базе данных.'))
+                    self.stdout.write(self.style.SUCCESS(
+                        'Теги успешно созданы в базе данных.'))
             else:
-                self.stderr.write(self.style.ERROR(f'Файл отсутствует: {csv_file_path}'))
+                self.stderr.write(self.style.ERROR(
+                    f'Файл отсутствует: {csv_file_path}'))

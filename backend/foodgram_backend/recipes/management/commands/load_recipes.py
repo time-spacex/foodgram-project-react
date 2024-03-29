@@ -20,7 +20,8 @@ class Command(BaseCommand):
                     line_number = 1
                     for row in reader:
                         line_number += 1
-                        author = CustomUser.objects.get(username=row['author_username'])
+                        author = CustomUser.objects.get(
+                            username=row['author_username'])
                         recipe = Recipe.objects.create(
                             name=row['name'],
                             text=row['text'],
@@ -29,12 +30,14 @@ class Command(BaseCommand):
                             author=author
                         )
                         ingredients_id = row['ingredients_id'].split(',')
-                        ingredients_amount = row['ingredients_amount'].split(',')
+                        ingredients_amount = (
+                            row['ingredients_amount'].split(','))
                         try:
                             if len(ingredients_id) != len(ingredients_amount):
                                 raise ValueError(
-                                    'Не совпадает количество в столбце ingredients_id и '
-                                    'количество значений в столбце ingredients_amount. '
+                                    'Не совпадает количество в столбце '
+                                    'ingredients_id и количество значений'
+                                    ' в столбце ingredients_amount. '
                                     f'Номер строки: {line_number}'
                                 )
                             for item in range(len(ingredients_id)):
@@ -51,4 +54,5 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(
                         f'Рецепты успешно созданы, {line_number} шт'))
             else:
-                self.stderr.write(self.style.ERROR(f'Отсутствует файл: {csv_file_path}'))
+                self.stderr.write(self.style.ERROR(
+                    f'Отсутствует файл: {csv_file_path}'))

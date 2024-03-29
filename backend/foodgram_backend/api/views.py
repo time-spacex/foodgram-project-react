@@ -48,9 +48,11 @@ class CustomUserViewSet(UserViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(self.get_queryset())
         if page is not None:
-            serializer = UserSerializer(page, many=True, context={'request': request})
+            serializer = UserSerializer(
+                page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
-        serializer = UserSerializer(queryset, many=True, context={'request': request})
+        serializer = UserSerializer(
+            queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
@@ -100,7 +102,7 @@ class CustomUserViewSet(UserViewSet):
         detail=False,
         methods=['get'],
         permission_classes=(permissions.IsAuthenticated,),
-        pagination_class = pagination.LimitOffsetPagination,
+        pagination_class=pagination.LimitOffsetPagination,
         url_path='subscriptions',
         url_name='get_subscriptions',
     )
@@ -167,7 +169,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.request.method in self.http_edit_methodes:
             return RecipeEditSerializer
         return super().get_serializer_class()
-    
+
     def perform_create(self, serializer):
         """Метод сохранения рецепта."""
         serializer.save(author=self.request.user)
@@ -219,7 +221,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
         ).values('ingredient_id').annotate(buy_amount=Sum('amount'))
         purchase_data = 'Ваш список покупок: '
         for buy_item in purchase:
-            ingredient = Ingredient.objects.get(pk=buy_item.get('ingredient_id'))
+            ingredient = Ingredient.objects.get(
+                pk=buy_item.get('ingredient_id'))
             purchase_data += (
                 ingredient.name + ', '
                 + str(buy_item.get('buy_amount'))
@@ -228,8 +231,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
         response = HttpResponse(
             purchase_data,
             headers={
-            'Content-Type': 'text/plain',
-            'Content-Disposition': 'attachment; filename="purchase_list.txt"',
+                'Content-Type': 'text/plain',
+                'Content-Disposition': (
+                    'attachment; filename="purchase_list.txt"'),
             },
         )
         return response
@@ -247,7 +251,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             if self.request.method == 'POST':
-                raise serializers.ValidationError('Данного рецепта не существует.')
+                raise serializers.ValidationError(
+                    'Данного рецепта не существует.')
             return Response(status=status.HTTP_404_NOT_FOUND)
         if self.request.method == 'POST':
             serializer = FavoriteSerializer(

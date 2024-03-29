@@ -38,7 +38,7 @@ class Command(BaseCommand):
                             )
                         Token.objects.get_or_create(user=user)
                     self.stdout.write(self.style.SUCCESS(
-                        f'Пользователи успешно созданы в базе данных.'))
+                        'Пользователи успешно созданы в базе данных.'))
             else:
                 self.stderr.write(self.style.ERROR(
                     f'Файл отсутствует: {csv_file_path}'))

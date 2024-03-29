@@ -24,7 +24,7 @@ class Command(BaseCommand):
                         ingredients_to_create.append(ingredient)
                     Ingredient.objects.bulk_create(ingredients_to_create)
                     self.stdout.write(self.style.SUCCESS(
-                        f'Ингредиенты успешно созданы в базе данных.'))
+                        'Ингредиенты успешно созданы в базе данных.'))
             else:
                 self.stderr.write(self.style.ERROR(
                     f'Файл отсутствует: {csv_file_path}'))

@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
-from foodgram_backend.settings import MAX_USERS_CHARFIELD_LENGTH, MAX_EMAILFIELD_LENGTH
+from foodgram_backend.settings import (
+    MAX_USERS_CHARFIELD_LENGTH, MAX_EMAILFIELD_LENGTH)
 
 
 class CustomUser(AbstractUser):

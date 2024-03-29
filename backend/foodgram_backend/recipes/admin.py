@@ -30,7 +30,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def tags_list(self, obj):
         return ", ".join([tag.name for tag in obj.tags.all()])
-    
+
     def favorites_count(self, obj):
         return obj.favorites.count()
 

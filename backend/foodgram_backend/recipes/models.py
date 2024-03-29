@@ -4,7 +4,11 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinValueValidator
 
 from users.models import CustomUser
-from foodgram_backend.settings import MAX_RECIPES_CHARFIELD_LENGTH, MAX_COLORFIELD_LENGTH, MIN_ACCEPTABLE_VALUE
+from foodgram_backend.settings import (
+    MAX_RECIPES_CHARFIELD_LENGTH,
+    MAX_COLORFIELD_LENGTH,
+    MIN_ACCEPTABLE_VALUE
+)
 
 
 User = get_user_model()

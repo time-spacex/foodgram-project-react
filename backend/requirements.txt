@@ -10,6 +10,8 @@ djoser==2.1.0
 pytz==2024.1
 Pillow==9.0.0
 sqlparse==0.4.4
+psycopg2-binary==2.9.3
 typing_extensions==4.10.0
 ipython==8.18.1
 webcolors==1.13
+python-dotenv==1.0.1
