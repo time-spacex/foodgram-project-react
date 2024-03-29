@@ -18,14 +18,24 @@ class Command(BaseCommand):
                 with open(csv_file_path, 'r', encoding='utf-8') as file:
                     reader = csv.reader(file)
                     for row in reader:
-                        user = CustomUser.objects.create_user(
-                            username=row[0],
-                            first_name=row[1],
-                            last_name=row[2],
-                            email=row[3],
-                            password=row[4],
-                            is_admin=(row[5] == 'True')
-                        )
+                        if row[5] != 'True':
+                            user = CustomUser.objects.create_user(
+                                username=row[0],
+                                first_name=row[1],
+                                last_name=row[2],
+                                email=row[3],
+                                password=row[4],
+                                is_admin=(row[5] == 'True')
+                            )
+                        elif row[5] == 'True':
+                            user = CustomUser.objects.create_superuser(
+                                username=row[0],
+                                first_name=row[1],
+                                last_name=row[2],
+                                email=row[3],
+                                password=row[4],
+                                is_admin=(row[5] == 'True')
+                            )
                         Token.objects.get_or_create(user=user)
                     self.stdout.write(self.style.SUCCESS(
                         f'Пользователи успешно созданы в базе данных.'))

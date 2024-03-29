@@ -28,6 +28,10 @@ class Tag(models.Model):
         validators=[UnicodeUsernameValidator]
     )
 
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
     def __str__(self):
         return self.slug
 
@@ -43,6 +47,10 @@ class Ingredient(models.Model):
         verbose_name='Единицы измерения',
         max_length=MAX_RECIPES_CHARFIELD_LENGTH
     )
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return self.name
@@ -93,6 +101,10 @@ class Recipe(models.Model):
         related_name='shopping_cart'
     )
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
     def __str__(self):
         return self.name
 
@@ -115,6 +127,10 @@ class IngredientsInRecipe(models.Model):
             MIN_ACCEPTABLE_VALUE,
         )]
     )
+
+    class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецепте'
 
     def __str__(self):
         return f'{self.ingredient.name} в рецепте "{self.recipe}"'
