@@ -128,7 +128,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6
+    'PAGE_SIZE': 6,
+    'PAGE_SIZE_QUERY_PARAM': 'limit',
 }
 
 # Next are the settings of the djoser library for working with users

@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework import (
-    status, permissions, pagination, exceptions, viewsets, serializers)
+    status, permissions, exceptions, viewsets, serializers, pagination)
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
@@ -29,7 +29,7 @@ class CustomUserViewSet(UserViewSet):
     """Представление для работы с пользователями."""
 
     permission_classes = (permissions.AllowAny,)
-    pagination_class = pagination.LimitOffsetPagination
+    # pagination_class = CustomPagination
     http_method_names = ['get', 'post', 'delete']
 
     def create(self, request):
@@ -102,7 +102,7 @@ class CustomUserViewSet(UserViewSet):
         detail=False,
         methods=['get'],
         permission_classes=(permissions.IsAuthenticated,),
-        pagination_class=pagination.LimitOffsetPagination,
+        pagination_class=pagination.PageNumberPagination,
         url_path='subscriptions',
         url_name='get_subscriptions',
     )
@@ -160,7 +160,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminAuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
     http_edit_methodes = ['POST', 'PATCH', 'DELETE']
-    pagination_class = pagination.LimitOffsetPagination
+    # pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
