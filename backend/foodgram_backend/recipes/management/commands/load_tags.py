@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand
 import os
 import csv
+
+from django.core.management.base import BaseCommand
 
 from recipes.models import Tag
 
@@ -13,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for csv_file_path in options['csv_file']:
             if os.path.exists(csv_file_path):
-                with open(csv_file_path, 'r', encoding='utf-8') as file:
+                with open(csv_file_path, 'r', encoding='utf-8-sig') as file:
                     reader = csv.reader(file)
                     for row in reader:
                         Tag.objects.create(

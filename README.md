@@ -1,13 +1,13 @@
 # praktikum_new_diplom
 
 # команда для загрузки ингредиентов:
-python manage.py load_ingredients ../../data/ingredients.csv
+python manage.py load_ingredients ../data/ingredients.csv
 
 # команда для загрузки тегов:
-python manage.py load_tags ../../data/tags.csv
+python manage.py load_tags ../data/tags.csv
 
 # команда для создания пользователей и их токенов:
-python manage.py load_users ../../data/users.csv
+python manage.py load_users ../data/users.csv
 
 # Создание пользователей для тестирования сайта:
 ------------------------------------------------------------------
@@ -20,4 +20,4 @@ user_admin              |   ASDfg123456     |       Да
 
 # Команда для создания рецептов:
 
-python manage.py load_recipes ../../data/recipes.csv
+python manage.py load_recipes ../data/recipes.csv

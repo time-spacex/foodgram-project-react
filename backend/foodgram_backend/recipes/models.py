@@ -28,7 +28,7 @@ class Tag(models.Model):
     slug = models.SlugField(
         verbose_name='Слаг',
         unique=True,
-        max_length=MAX_COLORFIELD_LENGTH,
+        max_length=MAX_RECIPES_CHARFIELD_LENGTH,
         validators=[UnicodeUsernameValidator]
     )
 
