@@ -168,7 +168,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         """Метод для получения сериализатора."""
         if self.request.method in self.http_edit_methodes:
             return RecipeEditSerializer
-        return super().get_serializer_class()
+        return RecipeSerializer
 
     def perform_create(self, serializer):
         """Метод сохранения рецепта."""
