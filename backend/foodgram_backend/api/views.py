@@ -23,13 +23,14 @@ from .serializers import (
 )
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnly
+from .pagination import PageNumberPagination
 
 
 class CustomUserViewSet(UserViewSet):
     """Представление для работы с пользователями."""
 
     permission_classes = (permissions.AllowAny,)
-    # pagination_class = CustomPagination
+    pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
 
     def create(self, request):
@@ -102,7 +103,6 @@ class CustomUserViewSet(UserViewSet):
         detail=False,
         methods=['get'],
         permission_classes=(permissions.IsAuthenticated,),
-        pagination_class=pagination.PageNumberPagination,
         url_path='subscriptions',
         url_name='get_subscriptions',
     )
@@ -160,7 +160,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminAuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
     http_edit_methodes = ['POST', 'PATCH', 'DELETE']
-    # pagination_class = CustomPagination
+    pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
