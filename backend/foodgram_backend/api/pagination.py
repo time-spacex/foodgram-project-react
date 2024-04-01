@@ -4,6 +4,8 @@ from rest_framework.pagination import (
     PageNumberPagination as MyPageNumberPagination)
 from rest_framework.response import Response
 
+from .filters import RecipeFilter
+
 
 class PageNumberPagination(MyPageNumberPagination):
 
@@ -14,6 +16,15 @@ class PageNumberPagination(MyPageNumberPagination):
         """Функция для извлечения значения параметра `limit` из запроса."""
         return int(request.query_params.get(
             self.page_size_query_param, self.page_size))
+    
+    def filter_queryset(self, queryset, request):
+        """Метод для применения фильтров к queryset."""
+        filter_backend = RecipeFilter(
+            request.query_params,
+            queryset=queryset,
+            request=request
+        )
+        return filter_backend.qs
 
     def paginate_queryset(self, queryset, request, view=None):
         """
@@ -21,7 +32,9 @@ class PageNumberPagination(MyPageNumberPagination):
         обновляет поле `count` так, чтобы оно показывало количество элементов,
         ограниченных параметром `limit`.
         """
-        self.count = min(self.get_page_size(request), self.get_limit(request))
+        queryset = self.filter_queryset(queryset, request)
+        self.count = queryset.count()
+        self.count = min(self.get_page_size(request), self.count)
         return super().paginate_queryset(queryset, request, view)
 
     def get_paginated_response(self, data):
