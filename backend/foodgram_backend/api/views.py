@@ -59,7 +59,10 @@ class CustomUserViewSet(UserViewSet):
     def retrieve(self, request, *args, **kwargs):
         """Метод API для представления пользователя."""
         instance = self.get_object()
-        serializer = UserSerializer(instance)
+        serializer = UserSerializer(
+            instance,
+            context={'request': request}
+        )
         return Response(serializer.data)
 
     def get_instance(self):
