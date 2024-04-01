@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework import (
-    status, permissions, exceptions, viewsets, serializers, pagination)
+    status, permissions, exceptions, viewsets, serializers)
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend

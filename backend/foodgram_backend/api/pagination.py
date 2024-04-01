@@ -16,7 +16,7 @@ class PageNumberPagination(MyPageNumberPagination):
         """Функция для извлечения значения параметра `limit` из запроса."""
         return int(request.query_params.get(
             self.page_size_query_param, self.page_size))
-    
+
     def filter_queryset(self, queryset, request):
         """Метод для применения фильтров к queryset."""
         filter_backend = RecipeFilter(
