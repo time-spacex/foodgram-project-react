@@ -21,3 +21,7 @@ user_admin      |    bigboss@mail.ge         |   ASDfg123456     |       Да
 # Команда для создания рецептов:
 
 python manage.py load_recipes ../data/recipes.csv
+
+# Адрес сайта для проверки дипломной работы:
+
+https://taski-masaski.ru/
