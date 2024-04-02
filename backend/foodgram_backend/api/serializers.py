@@ -78,8 +78,9 @@ class UserSerializer(serializers.ModelSerializer):
         """Метод для отображения поля подписок."""
         for subscriber in obj.subscribers.all():
             if (
-                self.context.get('request').user.is_authenticated and
-                self.context.get('request').user.id == subscriber.subscriber_id
+                self.context.get('request').user.is_authenticated
+                and self.context.get(
+                    'request').user.id == subscriber.subscriber_id
             ):
                 return True
         return False
