@@ -93,12 +93,4 @@ jobs:
           sudo docker compose -f docker-compose.production.yml pull
           sudo docker compose -f docker-compose.production.yml down
           sudo docker compose -f docker-compose.production.yml up -d
-          sudo docker compose -f docker-compose.production.yml exec backend python /foodgram_backend/manage.py migrate
-          sudo docker compose -f docker-compose.production.yml exec backend python /foodgram_backend/manage.py collectstatic
-          sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/foodgram_backend/collected_static/. /backend_static/static/
-          sudo docker compose -f docker-compose.production.yml exec backend python /foodgram_backend/manage.py load_ingredients ../data/ingredients.csv
-          sudo docker compose -f docker-compose.production.yml exec backend python /foodgram_backend/manage.py load_tags ../data/tags.csv
-          sudo docker compose -f docker-compose.production.yml exec backend python /foodgram_backend/manage.py load_users ../data/users.csv
-          sudo docker compose -f docker-compose.production.yml exec backend python /foodgram_backend/manage.py load_recipes ../data/recipes.csv
-          sudo docker compose -f docker-compose.production.yml exec backend curl -L https://disk.yandex.ru/d/PWF8KxVb2BbMFg/download -o /foodgram_backend/media.zip
-          sudo docker compose -f docker-compose.production.yml exec backend unzip -o /foodgram_backend/media.zip -d /app/foodgram_backend/media/
+          sudo docker-compose -f docker-compose.production.yml exec -it backend bash -c '/app/setup_script.sh'
