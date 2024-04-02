@@ -55,7 +55,7 @@ class RecipesApiTestCase(APITransactionTestCase):
             name='Pie',
             text='Create pie',
             ingredients=[{'id': self.salt.id, 'amount': '32'}, ],
-            tags=[self.tag.id,],
+            tags=[self.tag.id, ],
             cooking_time=10,
         )
 
