@@ -134,3 +134,4 @@ dmypy.json
 backend/foodgram_backend/sent_emails/
 backend/foodgram_backend/media/
 .vscode/
+.github/
