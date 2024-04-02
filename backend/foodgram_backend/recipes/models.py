@@ -105,11 +105,15 @@ class Recipe(models.Model):
         blank=True,
         related_name='shopping_cart'
     )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата и время публикации',
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('name',)
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.name

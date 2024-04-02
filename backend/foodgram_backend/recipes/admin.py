@@ -20,6 +20,7 @@ class RecipeAdmin(admin.ModelAdmin):
     """Административная конфигурация для рецептов."""
 
     list_display = (
+        'pub_date',
         'author',
         'name',
         'tags_list'
