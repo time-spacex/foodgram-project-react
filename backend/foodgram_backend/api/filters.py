@@ -17,10 +17,8 @@ class IngredientFilter(django_filters.FilterSet):
 class RecipeFilter(django_filters.FilterSet):
     """Кастомный фильтр для представления рецептов."""
 
-    tags = django_filters.ModelMultipleChoiceFilter(
-        field_name='tags__slug',
-        to_field_name='slug',
-        queryset=Tag.objects.all()
+    tags = django_filters.AllValuesMultipleFilter(
+        field_name='tags__slug'
     )
     is_favorited = django_filters.NumberFilter(
         field_name='favorites',
@@ -42,12 +40,12 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, name, value):
         """Метод обработки фильтрации избранных рецептов."""
-        if value == 1 and self.request.user.is_authenticated:
+        if value and self.request.user.is_authenticated:
             return self.request.user.favorites.all()
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
         """Метод обработки фильтрации рецептов в списке покупок."""
-        if value == 1 and self.request.user.is_authenticated:
+        if value and self.request.user.is_authenticated:
             return self.request.user.shopping_cart.all()
         return queryset
