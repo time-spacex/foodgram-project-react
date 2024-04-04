@@ -199,7 +199,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
 
     ingredients = IngredientInRecipeEditSerializer(
         many=True, allow_null=False, allow_empty=False)
-    image = Base64ImageField(required=True)
+    image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -305,6 +305,11 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         except TypeError:
             raise serializers.ValidationError(
                 'Неправильный формат данных тегов')
+        return value
+
+    def validate_image(self, value):
+        if not value:
+            raise serializers.ValidationError('Поле с изображением обязательно.')
         return value
 
 
