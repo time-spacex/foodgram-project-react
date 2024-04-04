@@ -6,7 +6,7 @@ from .views import (
     IngredientsViewSet,
     RecipesViewSet
 )
-
+#from djoser.views.UserViewSet
 
 router = DefaultRouter()
 
@@ -17,5 +17,6 @@ router.register('recipes', RecipesViewSet, basename='recipes')
 
 urlpatterns = [
     path('', include(router.urls)),
+    # path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
 ]

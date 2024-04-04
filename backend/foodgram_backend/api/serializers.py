@@ -6,7 +6,7 @@ from users.models import CustomUser, Subscription
 from recipes.models import Recipe, Tag, Ingredient, IngredientsInRecipe
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+'''class SignUpSerializer(serializers.ModelSerializer):
     """Сериализатор для создания пользователей."""
     class Meta:
         model = CustomUser
@@ -43,7 +43,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         """Метод для вывода сериализованных данных о пользователе."""
         data = super().to_representation(instance)
         data.pop('password', None)
-        return data
+        return data'''
 
 
 class UserSerializer(serializers.ModelSerializer):

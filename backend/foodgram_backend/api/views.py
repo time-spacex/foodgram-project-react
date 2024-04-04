@@ -11,7 +11,7 @@ from users.models import CustomUser
 from recipes.models import IngredientsInRecipe, Tag, Ingredient, Recipe
 from .serializers import (
     FavoriteSerializer,
-    SignUpSerializer,
+    # SignUpSerializer,
     SubscriptionGetSerializer,
     SubscriptionSerializer,
     UserSerializer,
@@ -29,22 +29,25 @@ from .pagination import PageNumberPagination
 class CustomUserViewSet(UserViewSet):
     """Представление для работы с пользователями."""
 
+    queryset = CustomUser.objects.all()
     permission_classes = (permissions.AllowAny,)
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
 
-    def create(self, request):
+    '''def create(self, request):
         """Метод API для создания новых пользователей."""
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)'''
 
     def get_queryset(self):
         """Метод API получения queryset пользователей."""
+        # нужно оставить этот метод так как метод в библиотеке 
+        # djoser перезаписывает queryset = queryset.filter(pk=user.pk)
         return CustomUser.objects.all()
 
-    def list(self, request):
+    '''def list(self, request):
         """Метод API представления списка пользователей."""
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(self.get_queryset())
@@ -54,22 +57,22 @@ class CustomUserViewSet(UserViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = UserSerializer(
             queryset, many=True, context={'request': request})
-        return Response(serializer.data)
+        return Response(serializer.data)'''
 
-    def retrieve(self, request, *args, **kwargs):
+    '''def retrieve(self, request, *args, **kwargs):
         """Метод API для представления пользователя."""
         instance = self.get_object()
         serializer = UserSerializer(
             instance,
             context={'request': request}
         )
-        return Response(serializer.data)
+        return Response(serializer.data)'''
 
-    def get_instance(self):
+    '''def get_instance(self):
         """Метод API для возврата объекта пользователя в запросе."""
         if self.request.user.is_authenticated:
             return self.request.user
-        raise exceptions.AuthenticationFailed()
+        raise exceptions.AuthenticationFailed()'''
 
     @action(
         detail=False,
