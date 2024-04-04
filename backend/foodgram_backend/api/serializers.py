@@ -23,6 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
     
     def get_is_subscribed(self, obj):
+        """Метод для отображения поля подписок."""
         context = self.context.get('request')
         if (
             context
@@ -245,18 +246,26 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         )
         instance.save()
         return instance
-
+  
     def get_is_favorited(self, obj):
-        """Метод поля избранных рецептов."""
-        user = self.context.get('request').user
-        if user.is_authenticated and user in obj.favorites.all():
+        """Метод для отображения поля избранного."""
+        context = self.context.get('request')
+        if (
+            context
+            and context.user.is_authenticated
+            and context.user.favorites.filter(pk=obj.id)
+        ):
             return True
         return False
-
+   
     def get_is_in_shopping_cart(self, obj):
-        """Метод поля рецептов в корзине покупок."""
-        user = self.context.get('request').user
-        if user.is_authenticated and user in obj.shopping_cart.all():
+        """Метод для отображения поля корзины покупок."""
+        context = self.context.get('request')
+        if (
+            context
+            and context.user.is_authenticated
+            and context.user.shopping_cart.filter(pk=obj.id)
+        ):
             return True
         return False
 
