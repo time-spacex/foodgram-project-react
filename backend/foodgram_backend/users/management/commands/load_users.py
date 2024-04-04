@@ -24,8 +24,7 @@ class Command(BaseCommand):
                                 first_name=row[1],
                                 last_name=row[2],
                                 email=row[3],
-                                password=row[4],
-                                is_admin=(row[5] == 'True')
+                                password=row[4]
                             )
                         elif row[5] == 'True':
                             user = CustomUser.objects.create_superuser(
@@ -33,8 +32,7 @@ class Command(BaseCommand):
                                 first_name=row[1],
                                 last_name=row[2],
                                 email=row[3],
-                                password=row[4],
-                                is_admin=(row[5] == 'True')
+                                password=row[4]
                             )
                         Token.objects.get_or_create(user=user)
                     self.stdout.write(self.style.SUCCESS(

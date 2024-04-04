@@ -12,8 +12,7 @@ class CustomUserAdmin(UserAdmin):
         'username',
         'first_name',
         'last_name',
-        'password',
-        'is_admin'
+        'password'
     )
     list_filter = ('email', 'username')
 
