@@ -219,6 +219,10 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         allow_null=False,
         allow_empty=False,
     )
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -256,23 +260,14 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags, clear=True)
         recipe.save()
         return recipe
-
+  
     def update(self, instance, validated_data):
         """Метод обновления рецептов."""
-        self.validate_tags(validated_data.get('tags'))
-        instance.tags.set(validated_data.get('tags'), clear=True)
-        self.validate_ingredients(validated_data.get('ingredients'))
-        instance.ingredients.clear()
-        for ingredient in validated_data.get('ingredients'):
-            instance.ingredients_in_recipe.create(**ingredient)
-        instance.image = validated_data.get('image', instance.image)
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time', instance.cooking_time
-        )
-        instance.save()
-        return instance
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        instance.tags.set(tags, clear=True)
+        self.add_ingredients(recipe=instance, ingredients=ingredients)
+        return super().update(instance, validated_data)
   
     def get_is_favorited(self, obj):
         """Метод для отображения поля избранного."""
@@ -295,54 +290,34 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         ):
             return True
         return False
-
-    def to_representation(self, obj):
+ 
+    def to_representation(self, instance):
         """Метод изменения выходных данных сериализатора."""
-        self.fields.pop('ingredients')
-        self.fields['tags'] = TagSerializer(many=True)
-        representation = super().to_representation(obj)
-        representation['id'] = obj.id
-        representation['author'] = UserSerializer(obj.author).data
-        representation['ingredients'] = IngredientInRecipeSerializer(
-            obj.ingredients_in_recipe.all(), many=True
+        return RecipeSerializer(
+            instance=instance,
+            context=self.context
         ).data
-        return representation
-
-    '''def validate_ingredients(self, value):
-        """Метод валидации поля ингредиентов."""
-        try:
-            ingredients_items = []
-            for ingredient in value:
-                if ingredient not in ingredients_items:
-                    ingredients_items.append(ingredient)
-                    Ingredient.objects.get(id=ingredient.get('ingredient_id'))
-                else:
-                    raise serializers.ValidationError(
-                        'В рецепт добавлены повторяющиеся ингредиенты')
-            return value
-        except Ingredient.DoesNotExist:
+   
+    def validate(self, data):
+        """Метод валидации полей тегов и ингредиентов."""
+        if not data.get('ingredients'):
             raise serializers.ValidationError(
-                'Данного ингредиента не существует'
-            )
-        except TypeError:
+                'В рецепт не добавлены ингредиенты')
+        ingredients_id = [
+            ingredient.get('id').id
+            for ingredient in data.get('ingredients')
+        ]
+        if not data.get('tags'):
             raise serializers.ValidationError(
-                'Неправильный формат данных ингредиентов'
-            )'''
-
-    def validate_tags(self, value):
-        """Метод валидации поля тегов."""
-        try:
-            tags_items = []
-            for tag in value:
-                if tag not in tags_items:
-                    tags_items.append(tag)
-                else:
-                    raise serializers.ValidationError(
-                        'В рецепт добавлены повторяющиеся теги')
-        except TypeError:
+                'В рецепт не добавлены теги')
+        tags_id = [tag.id for tag in data.get('tags')]
+        if len(ingredients_id) != len(set(ingredients_id)):
             raise serializers.ValidationError(
-                'Неправильный формат данных тегов')
-        return value
+                'В рецепт добавлены повторяющиеся ингредиенты')
+        if len(tags_id) != len(set(tags_id)):
+            raise serializers.ValidationError(
+                'В рецепт добавлены повторяющиеся теги')
+        return data
 
     def validate_image(self, value):
         if not value:
