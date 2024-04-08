@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
-from recipes.models import IngredientsInRecipe, Tag, Ingredient, Recipe
+from recipes.models import IngredientsInRecipe, ShoppingCart, Tag, Ingredient, Recipe
 from .serializers import (
     FavoriteSerializer,
     # SignUpSerializer,
@@ -54,7 +54,6 @@ class CustomUserViewSet(UserViewSet):
         url_path=r'(?P<user_id>\d+)/subscribe',
         url_name='add_delete_subscription',
     )
-
     def subscribe(self, request, user_id):
         """Метод создания и удаления подписок."""
 
@@ -161,26 +160,28 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def add_delete_from_sopping_cart(self, request, recipe_id):
         """Метод добавления и удаления рецептов в корзину покупок."""
-        try:
-            recipe = Recipe.objects.get(id=recipe_id)
-        except Recipe.DoesNotExist:
-            if self.request.method == 'POST':
-                raise serializers.ValidationError(
-                    'Данного рецепта не существует.')
-            return Response(status=status.HTTP_404_NOT_FOUND)
         if self.request.method == 'POST':
+            data = {
+                'user': self.request.user.id,
+                'recipe': recipe_id
+            }
             serializer = ShoppingCartSerializer(
-                instance=recipe,
-                data=request.data,
-                context={'request': request})
+                data=data,
+                context={'request': request}
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if self.request.method == 'DELETE':
-            if recipe not in request.user.shopping_cart.all():
+            recipe = get_object_or_404(Recipe, pk=recipe_id)
+            shopping_cart = ShoppingCart.objects.filter(
+                recipe=recipe,
+                user=self.request.user
+            )
+            if not shopping_cart.exists():
                 raise serializers.ValidationError(
                     'Данный рецепт не был добавлен в корзину покупок')
-            request.user.shopping_cart.remove(recipe)
+            shopping_cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(

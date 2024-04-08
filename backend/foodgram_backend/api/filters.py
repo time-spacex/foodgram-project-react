@@ -47,5 +47,6 @@ class RecipeFilter(django_filters.FilterSet):
     def filter_is_in_shopping_cart(self, queryset, name, value):
         """Метод обработки фильтрации рецептов в списке покупок."""
         if value and self.request.user.is_authenticated:
-            return self.request.user.shopping_cart.all()
+            return queryset.filter(
+                shopping_cart__user=self.request.user)
         return queryset

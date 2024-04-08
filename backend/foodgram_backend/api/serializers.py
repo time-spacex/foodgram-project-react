@@ -3,7 +3,7 @@ from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
 from users.models import CustomUser, Subscription
-from recipes.models import Recipe, Tag, Ingredient, IngredientsInRecipe
+from recipes.models import Recipe, ShoppingCart, Tag, Ingredient, IngredientsInRecipe
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для создания подписок."""
 
     class Meta:
-        model =Subscription
+        model = Subscription
         fields = ('subscriber', 'subscribed_to')
 
     def validate(self, data):
@@ -187,7 +187,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         """Метод отображения поля рецептов в списке покупок."""
         if self.context.get('request').user.is_authenticated:
-            return obj in self.context.get('request').user.shopping_cart.all()
+            return ShoppingCart.objects.filter(
+                user=self.context.get('request').user,
+                recipe=obj
+            ).exists()
         return False
 
     def get_ingredients(self, obj):
@@ -325,25 +328,40 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         return value
 
 
-class ShoppingCartSerializer(serializers.Serializer):
-    """Сериализатор для списка покупок."""
+class RecipeRepresentationSerializer(serializers.ModelSerializer):
+    """Сериализатор для представлений корзины и избранного."""
 
-    def update(self, instance, validated_data):
-        """Метод добавления рецептов в корзину покупок."""
-        if instance in self.context.get('request').user.shopping_cart.all():
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    """Сериализатор корзины покупок."""
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        """Метод валидации полей сериализатора."""
+        if ShoppingCart.objects.filter(
+            user=data.get('user'),
+            recipe=data.get('recipe')
+        ).exists():
             raise serializers.ValidationError(
                 'Данный рецепт уже добавлен в корзину')
-        self.context.get('request').user.shopping_cart.add(instance)
-        return instance
-
-    def to_representation(self, obj):
-        """Метод представления добавленных рецептов."""
-        representation = super().to_representation(obj)
-        representation['id'] = obj.id
-        representation['name'] = obj.name
-        representation['image'] = obj.image.url
-        representation['cooking_time'] = obj.cooking_time
-        return representation
+        return data
+    
+    def to_representation(self, instance):
+        """Метод представления сериализованных данных."""
+        return RecipeRepresentationSerializer(
+            instance.recipe).data
 
 
 class FavoriteSerializer(serializers.Serializer):
@@ -359,4 +377,5 @@ class FavoriteSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         """Метод представления добавленных рецептов."""
-        return ShoppingCartSerializer(instance).data
+        return RecipeRepresentationSerializer(
+            instance).data
