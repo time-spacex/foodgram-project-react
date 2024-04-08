@@ -235,13 +235,9 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             'is_favorited',
             'is_in_shopping_cart',
         )
-
-    def create(self, validated_data):
-        """Метод создания рецепта."""
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.ingredients_in_recipe.bulk_create(
+    
+    def add_ingredients(self, recipe, ingredients):
+        return recipe.ingredients_in_recipe.bulk_create(
             [
                 IngredientsInRecipe(
                     recipe=recipe,
@@ -250,8 +246,14 @@ class RecipeEditSerializer(serializers.ModelSerializer):
                 ) for ingredient in ingredients
             ]
         )
-        for tag in tags:
-            recipe.tags.add(tag)
+
+    def create(self, validated_data):
+        """Метод создания рецепта."""
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(**validated_data)
+        self.add_ingredients(recipe=recipe, ingredients=ingredients)
+        recipe.tags.set(tags, clear=True)
         recipe.save()
         return recipe
 
