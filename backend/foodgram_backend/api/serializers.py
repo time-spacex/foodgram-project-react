@@ -199,7 +199,9 @@ class RecipeSerializer(serializers.ModelSerializer):
 class IngredientInRecipeEditSerializer(serializers.ModelSerializer):
     """Сериализатор ингредиентов для редактирования рецептов."""
 
-    id = serializers.IntegerField(source='ingredient_id')
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
 
     class Meta:
         model = IngredientsInRecipe
@@ -213,7 +215,10 @@ class RecipeEditSerializer(serializers.ModelSerializer):
     """Сериализатор для редактирования рецептов."""
 
     ingredients = IngredientInRecipeEditSerializer(
-        many=True, allow_null=False, allow_empty=False)
+        many=True,
+        allow_null=False,
+        allow_empty=False,
+    )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -236,8 +241,15 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
-        for ingredient in ingredients:
-            recipe.ingredients_in_recipe.create(**ingredient)
+        recipe.ingredients_in_recipe.bulk_create(
+            [
+                IngredientsInRecipe(
+                    recipe=recipe,
+                    ingredient=ingredient.get('id'),
+                    amount=ingredient.get('amount')
+                ) for ingredient in ingredients
+            ]
+        )
         for tag in tags:
             recipe.tags.add(tag)
         recipe.save()
@@ -294,7 +306,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         ).data
         return representation
 
-    def validate_ingredients(self, value):
+    '''def validate_ingredients(self, value):
         """Метод валидации поля ингредиентов."""
         try:
             ingredients_items = []
@@ -313,7 +325,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         except TypeError:
             raise serializers.ValidationError(
                 'Неправильный формат данных ингредиентов'
-            )
+            )'''
 
     def validate_tags(self, value):
         """Метод валидации поля тегов."""
