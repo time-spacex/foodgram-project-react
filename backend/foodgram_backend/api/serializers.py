@@ -36,62 +36,75 @@ class UserSerializer(serializers.ModelSerializer):
         return False
 
 
-class SubscriptionSerializer(serializers.Serializer):
+class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для создания подписок."""
 
-    def update(self, instance, validated_data):
-        """Метод создания опдписки на пользователя."""
-        if instance == self.context.get('request').user:
+    class Meta:
+        model =Subscription
+        fields = ('subscriber', 'subscribed_to')
+
+    def validate(self, data):
+        """Метод валидации полей сериализатора."""
+        subscriber = data.get('subscriber')
+        subscribed_to = data.get('subscribed_to')
+        if subscriber == subscribed_to:
             raise serializers.ValidationError(
                 'Невозможно оформить подписку на свой профиль.'
             )
-        for subscriprion in self.context.get(
-            'request'
-        ).user.subscriptions.all():
-            if instance == subscriprion.subscribed_to:
-                raise serializers.ValidationError(
-                    'Данный пользователь уже добавлен в подписки')
-        Subscription.objects.create(
-            subscriber=self.context.get('request').user,
-            subscribed_to=instance
-        )
-        return instance
+        if subscriber.subscriptions.filter(subscribed_to=subscribed_to):
+            raise serializers.ValidationError(
+                'Данный пользователь уже добавлен в подписки'
+            )
+        return data
 
     def to_representation(self, instance):
-        """Метод представления созданной подписки."""
-        user_data = UserSerializer(
-            instance=instance,
-            context=self.context
+        """Метод представления сериализованных данных."""
+        return SubscriptionGetSerializer(
+            instance.subscribed_to, context=self.context
         ).data
-        recipe_data = FavoriteSerializer(
-            instance=instance.recipes.all(),
-            many=True,
-            context=self.context
-        ).data
+
+
+class SubscriptionGetSerializer(UserSerializer):
+    """Сериализатор для получения списка подписок."""
+
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(
+        read_only=True,
+        default=0,
+        source='recipes.count'
+    )
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
+
+    def get_recipes(self, obj):
+        """Метод для получения списка рецептов."""
         query_params = self.context.get(
             'request'
         ).query_params.get('recipes_limit')
+        recipe_data = obj.recipes.all()
         if query_params:
-            query_params = int(query_params)
-            recipe_data = recipe_data[0:query_params]
-        return_data = {
-            **user_data,
-            'recipes': recipe_data,
-            'recipes_count': len(recipe_data)
-        }
-        return return_data
-
-
-class SubscriptionGetSerializer(serializers.Serializer):
-    """Сериализатор для получения списка подписок."""
-
-    def to_representation(self, instance):
-        """Метод представления списка подписок."""
-        ret = SubscriptionSerializer(
-            instance,
-            context=self.context,
+            recipe_data = recipe_data[0:int(query_params)]
+        return FavoriteSerializer(
+            recipe_data,
+            many=True,
+            context=self.context
         ).data
-        return ret
+    
+    def get_is_subscribed(self, obj):
+        """Метод для получения поля подписки."""
+        return super().get_is_subscribed(obj)
 
 
 class TagSerializer(serializers.ModelSerializer):

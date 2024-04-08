@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404
 from rest_framework import (
     status, permissions, exceptions, viewsets, serializers)
 from rest_framework.response import Response
@@ -56,14 +57,12 @@ class CustomUserViewSet(UserViewSet):
 
     def subscribe(self, request, user_id):
         """Метод создания и удаления подписок."""
-        try:
-            user = CustomUser.objects.get(pk=user_id)
-        except CustomUser.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user = get_object_or_404(CustomUser, pk=user_id)
+        data = {'subscriber': request.user.id, 'subscribed_to': user.id}
         if self.request.method == 'POST':
             serializer = SubscriptionSerializer(
-                instance=user,
-                data=request.data,
+                data=data,
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
