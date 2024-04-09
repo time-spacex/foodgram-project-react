@@ -9,16 +9,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser, Subscription
-from recipes.models import Favorites, IngredientsInRecipe, ShoppingCart, Tag, Ingredient, Recipe
+from recipes.models import (
+    Favorites,
+    IngredientsInRecipe, ShoppingCart, Tag, Ingredient, Recipe)
 from .serializers import (
     FavoriteSerializer,
     SubscriptionGetSerializer,
     SubscriptionSerializer,
     TagSerializer,
     IngredientSerializer,
-    RecipeSerializer,
-    RecipeEditSerializer,
-    ShoppingCartSerializer
+    RecipeSerializer, RecipeEditSerializer, ShoppingCartSerializer
 )
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnly
@@ -32,7 +32,6 @@ class CustomUserViewSet(UserViewSet):
     permission_classes = (permissions.AllowAny,)
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
-
 
     @action(["get"], detail=False)
     def me(self, request, *args, **kwargs):
@@ -130,7 +129,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action not in permissions.SAFE_METHODS:
             return RecipeEditSerializer
         return RecipeSerializer
-
 
     @action(
         detail=False,

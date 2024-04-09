@@ -1,7 +1,10 @@
 from django.contrib import admin
 
 from users.models import Subscription
-from .models import Favorites, Recipe, Ingredient, IngredientsInRecipe, ShoppingCart, Tag
+from .models import (
+    Favorites,
+    Recipe,
+    Ingredient, IngredientsInRecipe, ShoppingCart, Tag)
 
 
 class TagAdmin(admin.ModelAdmin):
