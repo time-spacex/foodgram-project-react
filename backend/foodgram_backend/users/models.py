@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F, Q
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
@@ -45,13 +46,26 @@ class Subscription(models.Model):
     subscriber = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscriptions'
+        related_name='subscriptions',
+        verbose_name='подписчик'
     )
     subscribed_to = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscribers'
+        related_name='subscribers',
+        verbose_name='подписан на'
     )
 
     class Meta:
-        unique_together = ('subscriber', 'subscribed_to',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['subscriber', 'subscribed_to'],
+                name='unique_subscriber_and_subscribed_to'
+            ),
+            models.CheckConstraint(
+                check=~Q(subscriber=F('subscribed_to')),
+                name='prevent_self_subscription'
+            ),
+        ]

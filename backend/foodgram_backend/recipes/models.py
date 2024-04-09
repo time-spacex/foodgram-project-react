@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
+from colorfield import fields
 
 from users.models import CustomUser
 from foodgram_backend.constants import (
+    MAX_ACCEPTABLE_VALUE,
     MAX_RECIPES_CHARFIELD_LENGTH,
-    MAX_COLORFIELD_LENGTH,
     MIN_ACCEPTABLE_VALUE
 )
 
@@ -15,21 +15,22 @@ User = get_user_model()
 
 
 class Tag(models.Model):
-    """Модель тэгов к рецептам."""
+    """Модель тегов к рецептам."""
 
     name = models.CharField(
-        verbose_name='Наименование тэга',
-        max_length=MAX_RECIPES_CHARFIELD_LENGTH
+        verbose_name='Наименование тега',
+        max_length=MAX_RECIPES_CHARFIELD_LENGTH,
+        unique=True
     )
-    color = models.CharField(
+    color = fields.ColorField(
         verbose_name='Цвет',
-        max_length=MAX_COLORFIELD_LENGTH
+        default='#00FF00',
+        unique=True
     )
     slug = models.SlugField(
         verbose_name='Слаг',
         unique=True,
-        max_length=MAX_RECIPES_CHARFIELD_LENGTH,
-        validators=[UnicodeUsernameValidator]
+        max_length=MAX_RECIPES_CHARFIELD_LENGTH
     )
 
     class Meta:
@@ -56,6 +57,12 @@ class Ingredient(models.Model):
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ('name',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=('name', 'measurement_unit',),
+                name='unique_ingredient'
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -75,11 +82,24 @@ class Recipe(models.Model):
         verbose_name='Изображение',
         upload_to='recipes/images/'
     )
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления (мин.)',
-        validators=[MinValueValidator(
-            MIN_ACCEPTABLE_VALUE,
-        )]
+        validators=[
+            MinValueValidator(
+                MIN_ACCEPTABLE_VALUE,
+                message=(
+                    'Время приготовления не должно '
+                    f'быть меньше {MAX_ACCEPTABLE_VALUE} мин.'
+                )
+            ),
+            MaxValueValidator(
+                MAX_ACCEPTABLE_VALUE,
+                message=(
+                    'Время приготовления не должно '
+                    f'превышать {MAX_ACCEPTABLE_VALUE} мин.'
+                )
+            )
+        ]
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -119,11 +139,24 @@ class IngredientsInRecipe(models.Model):
         on_delete=models.RESTRICT,
         related_name='ingredients'
     )
-    amount = models.IntegerField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
-        validators=[MinValueValidator(
-            MIN_ACCEPTABLE_VALUE,
-        )]
+        validators=[
+            MinValueValidator(
+                MIN_ACCEPTABLE_VALUE,
+                message=(
+                    'Количество ингредиентов не должно '
+                    f'быть меньше {MAX_ACCEPTABLE_VALUE} мин.'
+                )
+            ),
+            MinValueValidator(
+                MAX_ACCEPTABLE_VALUE,
+                message=(
+                    'Количество ингредиентов не должно '
+                    f'превышать {MAX_ACCEPTABLE_VALUE} мин.'
+                )
+            )
+        ]
     )
 
     class Meta:

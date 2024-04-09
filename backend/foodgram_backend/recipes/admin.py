@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from users.models import Subscription
 from .models import Favorites, Recipe, Ingredient, IngredientsInRecipe, ShoppingCart, Tag
 
 
@@ -70,9 +71,16 @@ class FavoritesAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
 
 
+class SubscriptionAdmin(admin.ModelAdmin):
+    """Административная конфигурация для модели подписок."""
+
+    list_display = ('subscriber', 'subscribed_to')
+
+
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(IngredientsInRecipe, IngredientsInRecipeAdmin)
 admin.site.register(ShoppingCart, ShoppingCartAdmin)
 admin.site.register(Favorites, FavoritesAdmin)
+admin.site.register(Subscription, SubscriptionAdmin)
