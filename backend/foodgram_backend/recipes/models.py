@@ -149,7 +149,7 @@ class IngredientsInRecipe(models.Model):
                     f'быть меньше {MIN_ACCEPTABLE_VALUE} .'
                 )
             ),
-            MinValueValidator(
+            MaxValueValidator(
                 MAX_ACCEPTABLE_VALUE,
                 message=(
                     'Количество ингредиентов не должно '
