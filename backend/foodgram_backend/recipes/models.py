@@ -89,7 +89,7 @@ class Recipe(models.Model):
                 MIN_ACCEPTABLE_VALUE,
                 message=(
                     'Время приготовления не должно '
-                    f'быть меньше {MAX_ACCEPTABLE_VALUE} мин.'
+                    f'быть меньше {MIN_ACCEPTABLE_VALUE} мин.'
                 )
             ),
             MaxValueValidator(
