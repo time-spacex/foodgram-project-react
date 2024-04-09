@@ -261,6 +261,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         """Метод создания рецепта."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
+        validated_data['author'] = self.context.get('request').user
         recipe = Recipe.objects.create(**validated_data)
         self.add_ingredients(recipe=recipe, ingredients=ingredients)
         recipe.tags.set(tags, clear=True)

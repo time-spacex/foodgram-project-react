@@ -131,9 +131,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipeEditSerializer
         return RecipeSerializer
 
-    def perform_create(self, serializer):
-        """Метод сохранения рецепта."""
-        serializer.save(author=self.request.user)
 
     @action(
         detail=False,
