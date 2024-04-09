@@ -18,7 +18,8 @@ from .serializers import (
     SubscriptionSerializer,
     TagSerializer,
     IngredientSerializer,
-    RecipeSerializer, RecipeEditSerializer, ShoppingCartSerializer
+    RecipeSerializer,
+    UserSerializer, RecipeEditSerializer, ShoppingCartSerializer
 )
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnly
@@ -29,6 +30,7 @@ class CustomUserViewSet(UserViewSet):
     """Представление для работы с пользователями."""
 
     queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
     permission_classes = (permissions.AllowAny,)
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
