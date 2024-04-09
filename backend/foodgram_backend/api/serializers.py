@@ -263,6 +263,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
         )
 
     def add_ingredients(self, recipe, ingredients):
+        """Метод для сохранения ингредиентов в рецепте."""
         return recipe.ingredients_in_recipe.bulk_create(
             [
                 IngredientsInRecipe(

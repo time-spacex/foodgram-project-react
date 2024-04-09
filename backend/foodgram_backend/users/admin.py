@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from users.models import CustomUser
+from .models import CustomUser, Subscription
 
 
 class CustomUserAdmin(UserAdmin):
@@ -17,4 +17,11 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('email', 'username')
 
 
+class SubscriptionAdmin(admin.ModelAdmin):
+    """Административная конфигурация для модели подписок."""
+
+    list_display = ('subscriber', 'subscribed_to')
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Subscription, SubscriptionAdmin)
