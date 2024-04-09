@@ -2,20 +2,18 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import (
-    status, permissions, exceptions, viewsets, serializers)
+    status, permissions, viewsets, serializers)
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
-from users.models import CustomUser
+from users.models import CustomUser, Subscription
 from recipes.models import Favorites, IngredientsInRecipe, ShoppingCart, Tag, Ingredient, Recipe
 from .serializers import (
     FavoriteSerializer,
-    # SignUpSerializer,
     SubscriptionGetSerializer,
     SubscriptionSerializer,
-    UserSerializer,
     TagSerializer,
     IngredientSerializer,
     RecipeSerializer,
@@ -30,16 +28,11 @@ from .pagination import PageNumberPagination
 class CustomUserViewSet(UserViewSet):
     """Представление для работы с пользователями."""
 
-    # queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.all()
     permission_classes = (permissions.AllowAny,)
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
 
-    def get_queryset(self):
-        """Метод API получения queryset пользователей."""
-        # нужно оставить этот метод так как метод в библиотеке 
-        # djoser перезаписывает queryset = queryset.filter(pk=user.pk)
-        return CustomUser.objects.all()
 
     @action(["get"], detail=False)
     def me(self, request, *args, **kwargs):
@@ -68,12 +61,13 @@ class CustomUserViewSet(UserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if self.request.method == 'DELETE':
-            if not request.user.subscriptions.all():
+            if not request.user.subscriptions.exists():
                 raise serializers.ValidationError(
                     'У данного пользователя нет подписок')
-            for subscriprion in request.user.subscriptions.all():
-                if subscriprion.subscribed_to == user:
-                    subscriprion.delete()
+            Subscription.objects.filter(
+                subscriber=request.user,
+                subscribed_to=user
+            ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -92,37 +86,28 @@ class CustomUserViewSet(UserViewSet):
         )
         queryset = self.filter_queryset(subscribed_to_queryset)
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = SubscriptionGetSerializer(
-                page,
-                context={'request': request},
-                many=True
-            )
-            return self.get_paginated_response(serializer.data)
         serializer = SubscriptionGetSerializer(
-            subscribed_to_queryset,
+            page,
             context={'request': request},
             many=True
         )
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
 
-class TagsViewSet(viewsets.ModelViewSet):
+class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     """Представление для тегов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    http_method_names = ['get']
     pagination_class = None
     permission_classes = (permissions.AllowAny,)
 
 
-class IngredientsViewSet(viewsets.ModelViewSet):
+class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     """Представление для ингредиентов."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    http_method_names = ['get']
     pagination_class = None
     permission_classes = (permissions.AllowAny,)
     filter_backends = (DjangoFilterBackend,)
@@ -136,14 +121,13 @@ class RecipesViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (IsAdminAuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
-    http_edit_methodes = ['POST', 'PATCH', 'DELETE']
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         """Метод для получения сериализатора."""
-        if self.request.method in self.http_edit_methodes:
+        if self.action not in permissions.SAFE_METHODS:
             return RecipeEditSerializer
         return RecipeSerializer
 
