@@ -41,7 +41,8 @@ class RecipeFilter(django_filters.FilterSet):
     def filter_is_favorited(self, queryset, name, value):
         """Метод обработки фильтрации избранных рецептов."""
         if value and self.request.user.is_authenticated:
-            return self.request.user.favorites.all()
+            return queryset.filter(
+                favorites__user=self.request.user)
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):

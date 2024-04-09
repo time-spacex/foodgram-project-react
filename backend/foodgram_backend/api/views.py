@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 
 from users.models import CustomUser
-from recipes.models import IngredientsInRecipe, ShoppingCart, Tag, Ingredient, Recipe
+from recipes.models import Favorites, IngredientsInRecipe, ShoppingCart, Tag, Ingredient, Recipe
 from .serializers import (
     FavoriteSerializer,
     # SignUpSerializer,
@@ -226,25 +226,26 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def add_delete_from_favorites(self, request, recipe_id):
         """Метод для добавления и удаления рецепта в избранное."""
-        try:
-            recipe = Recipe.objects.get(id=recipe_id)
-        except Recipe.DoesNotExist:
-            if self.request.method == 'POST':
-                raise serializers.ValidationError(
-                    'Данного рецепта не существует.')
-            return Response(status=status.HTTP_404_NOT_FOUND)
         if self.request.method == 'POST':
+            data = {
+                'user': self.request.user.id,
+                'recipe': recipe_id
+            }
             serializer = FavoriteSerializer(
-                instance=recipe,
-                data=request.data,
+                data=data,
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if self.request.method == 'DELETE':
-            if recipe not in request.user.favorites.all():
+            recipe = get_object_or_404(Recipe, pk=recipe_id)
+            favorites = Favorites.objects.filter(
+                recipe=recipe,
+                user=self.request.user
+            )
+            if not favorites.exists():
                 raise serializers.ValidationError(
-                    'Данный рецепт не был добавлен в избранное.')
-            request.user.favorites.remove(recipe)
+                    'Данный рецепт не был добавлен в кизбранное')
+            favorites.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

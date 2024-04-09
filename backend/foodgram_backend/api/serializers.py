@@ -3,7 +3,7 @@ from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
 from users.models import CustomUser, Subscription
-from recipes.models import Recipe, ShoppingCart, Tag, Ingredient, IngredientsInRecipe
+from recipes.models import Favorites, Recipe, ShoppingCart, Tag, Ingredient, IngredientsInRecipe
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -96,7 +96,7 @@ class SubscriptionGetSerializer(UserSerializer):
         recipe_data = obj.recipes.all()
         if query_params:
             recipe_data = recipe_data[0:int(query_params)]
-        return FavoriteSerializer(
+        return RecipeRepresentationSerializer(
             recipe_data,
             many=True,
             context=self.context
@@ -181,7 +181,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         """Метод отображения поля избранных рецептов."""
         if self.context.get('request').user.is_authenticated:
-            return obj in self.context.get('request').user.favorites.all()
+            return Favorites.objects.filter(
+                user=self.context.get('request').user,
+                recipe=obj
+            ).exists()
         return False
 
     def get_is_in_shopping_cart(self, obj):
@@ -364,18 +367,24 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             instance.recipe).data
 
 
-class FavoriteSerializer(serializers.Serializer):
+class FavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор для добавления рецептов в избранное."""
 
-    def update(self, instance, validated_data):
-        """Метод добавления рецептов в избранное."""
-        if instance in self.context.get('request').user.favorites.all():
+    class Meta:
+        model = Favorites
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        """Метод валидации полей сериализатора."""
+        if Favorites.objects.filter(
+            user=data.get('user'),
+            recipe=data.get('recipe')
+        ).exists():
             raise serializers.ValidationError(
                 'Данный рецепт уже добавлен в избранное')
-        self.context.get('request').user.favorites.add(instance)
-        return instance
+        return data
 
     def to_representation(self, instance):
-        """Метод представления добавленных рецептов."""
+        """Метод представления сериализованных данных."""
         return RecipeRepresentationSerializer(
-            instance).data
+            instance.recipe).data

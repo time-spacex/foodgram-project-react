@@ -93,12 +93,6 @@ class Recipe(models.Model):
         verbose_name='Aвтор рецепта',
         related_name='recipes'
     )
-    favorites = models.ManyToManyField(
-        CustomUser,
-        verbose_name='Избранное',
-        blank=True,
-        related_name='favorites'
-    )
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
         auto_now_add=True
@@ -161,3 +155,26 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return f'Рецепт {self.recipe} в корзине {self.user}'
+
+
+class Favorites(models.Model):
+    """Модель избранных рецептов."""
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
+        related_name='favorites'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт',
+        related_name='favorites'
+    )
+
+    class Meta:
+        verbose_name = 'Избранные рецепты'
+        verbose_name_plural = 'Избранные рецепты'
+
+    def __str__(self):
+        return f'Рецепт {self.recipe} в избранных {self.user}'
