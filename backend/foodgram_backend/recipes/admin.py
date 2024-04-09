@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Recipe, Ingredient, IngredientsInRecipe, Tag
+from .models import Favorites, Recipe, Ingredient, IngredientsInRecipe, ShoppingCart, Tag
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -16,6 +16,13 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class IngredientsInRecipeInline(admin.TabularInline):
+    """Поле добавления ингредиентов в админке рецептов."""
+    model = IngredientsInRecipe
+    extra = 1
+    min_num = 1
+
+
 class RecipeAdmin(admin.ModelAdmin):
     """Административная конфигурация для рецептов."""
 
@@ -28,6 +35,7 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = ('name', 'author__username', 'tags__name')
     list_display_links = ('name', 'author')
     readonly_fields = ('favorites_count',)
+    inlines = [IngredientsInRecipeInline]
 
     def tags_list(self, obj):
         return ", ".join([tag.name for tag in obj.tags.all()])
@@ -50,7 +58,21 @@ class IngredientsInRecipeAdmin(admin.ModelAdmin):
     list_per_page = 25
 
 
+class ShoppingCartAdmin(admin.ModelAdmin):
+    """Административная конфигурация для корзины покупок."""
+
+    list_display = ('user', 'recipe')
+
+
+class FavoritesAdmin(admin.ModelAdmin):
+    """Административная конфигурация для избранных рецептов."""
+
+    list_display = ('user', 'recipe')
+
+
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(IngredientsInRecipe, IngredientsInRecipeAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)
+admin.site.register(Favorites, FavoritesAdmin)

@@ -1,7 +1,7 @@
 from rest_framework.pagination import (
     PageNumberPagination as MyPageNumberPagination)
 
-from foodgram_backend.settings import PAGE_SIZE
+from foodgram_backend.constants import PAGE_SIZE
 
 
 class PageNumberPagination(MyPageNumberPagination):

@@ -188,13 +188,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-MAX_USERS_CHARFIELD_LENGTH = 150
-
-MAX_RECIPES_CHARFIELD_LENGTH = 200
-
-MAX_COLORFIELD_LENGTH = 7
-
-MIN_ACCEPTABLE_VALUE = 1
-
-PAGE_SIZE = 6
