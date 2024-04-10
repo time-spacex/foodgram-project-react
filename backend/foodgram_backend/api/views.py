@@ -35,11 +35,12 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
 
-    @action(["get"], detail=False)
-    def me(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return super().me(request, *args, **kwargs)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def get_permissions(self):
+        """Метод пользовательских разрешений для представлений."""
+        if self.action == 'me':
+            return (permissions.IsAuthenticated(),)
+        return super().get_permissions()
 
     @action(
         detail=False,

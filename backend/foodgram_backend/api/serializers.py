@@ -31,15 +31,13 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         """Метод для отображения поля подписок."""
         context = self.context.get('request')
-        if (
+        return (
             context
             and context.user.is_authenticated
             and context.user.subscriptions.filter(
                 subscribed_to=obj
             ).exists()
-        ):
-            return True
-        return False
+        )
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -79,20 +77,10 @@ class SubscriptionGetSerializer(UserSerializer):
         default=0,
         source='recipes.count'
     )
-    is_subscribed = serializers.SerializerMethodField()
 
-    class Meta:
-        model = CustomUser
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count'
-        )
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + (
+            'recipes', 'recipes_count',)
 
     def get_recipes(self, obj):
         """Метод для получения списка рецептов."""
@@ -100,17 +88,18 @@ class SubscriptionGetSerializer(UserSerializer):
             'request'
         ).query_params.get('recipes_limit')
         recipe_data = obj.recipes.all()
-        if query_params:
-            recipe_data = recipe_data[0:int(query_params)]
+        try:
+            if query_params:
+                recipe_data = recipe_data[:int(query_params)]
+        except Exception:
+            raise serializers.ValidationError(
+                'Укажите "recipes_limit" целым положительным чиислом.'
+            )
         return RecipeRepresentationSerializer(
             recipe_data,
             many=True,
             context=self.context
         ).data
-
-    def get_is_subscribed(self, obj):
-        """Метод для получения поля подписки."""
-        return super().get_is_subscribed(obj)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -187,30 +176,26 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         """Метод для отображения поля избранного."""
         context = self.context.get('request')
-        if (
+        return (
             context
             and context.user.is_authenticated
             and Favorites.objects.filter(
                 user=context.user,
                 recipe=obj
             ).exists()
-        ):
-            return True
-        return False
+        )
 
     def get_is_in_shopping_cart(self, obj):
         """Метод для отображения поля корзины покупок."""
         context = self.context.get('request')
-        if (
+        return (
             context
             and context.user.is_authenticated
             and ShoppingCart.objects.filter(
                 user=context.user,
                 recipe=obj
             ).exists()
-        ):
-            return True
-        return False
+        )
 
     def get_ingredients(self, obj):
         """Метод для отображения поля ингредиентов."""
@@ -262,7 +247,8 @@ class RecipeEditSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart',
         )
 
-    def add_ingredients(self, recipe, ingredients):
+    @staticmethod
+    def add_ingredients(recipe, ingredients):
         """Метод для сохранения ингредиентов в рецепте."""
         return recipe.ingredients_in_recipe.bulk_create(
             [
