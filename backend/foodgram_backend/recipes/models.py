@@ -167,47 +167,42 @@ class IngredientsInRecipe(models.Model):
         return f'{self.ingredient.name} в рецепте "{self.recipe}"'
 
 
-class ShoppingCart(models.Model):
-    """Модель корзины покупок."""
+class UserRecipeRelatedModel(models.Model):
+    """Модель для связи рецептов с пользователями."""
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name='Пользователь',
-        related_name='shopping_cart'
+        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт',
-        related_name='shopping_cart'
+        verbose_name='Рецепт'
     )
+
+    class Meta:
+        abstract = True
+
+
+class ShoppingCart(UserRecipeRelatedModel):
+    """Модель корзины покупок."""
 
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        default_related_name = 'shopping_cart'
 
     def __str__(self):
         return f'Рецепт {self.recipe} в корзине {self.user}'
 
 
-class Favorites(models.Model):
+class Favorites(UserRecipeRelatedModel):
     """Модель избранных рецептов."""
-    user = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        verbose_name='Пользователь',
-        related_name='favorites'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        verbose_name='Рецепт',
-        related_name='favorites'
-    )
 
     class Meta:
         verbose_name = 'Избранные рецепты'
         verbose_name_plural = 'Избранные рецепты'
+        default_related_name = 'favorites'
 
     def __str__(self):
         return f'Рецепт {self.recipe} в избранных {self.user}'

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
     'api.apps.ApiConfig',
+    'colorfield',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +89,7 @@ WSGI_APPLICATION = 'foodgram_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-if os.getenv('DEBUG', default=False) == 'False':
+if os.getenv('SQLITE3_DEBUG_DATABASE', default=False) == 'False':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
