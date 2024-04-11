@@ -35,7 +35,6 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'delete']
 
-
     def get_permissions(self):
         """Метод пользовательских разрешений для представлений."""
         if self.action == 'me':
