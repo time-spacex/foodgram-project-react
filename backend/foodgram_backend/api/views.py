@@ -174,8 +174,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def download_from_shopping_cart(self, request):
         """Метод получения списка покупок."""
-        shopping_cart = request.user.shopping_cart.all()
-        recipes_ids = [recipe.id for recipe in shopping_cart]
+        shopping_cart = ShoppingCart.objects.filter(
+            user=request.user).values('recipe')
+        recipes_ids = [id['recipe'] for id in shopping_cart]
         purchase = IngredientsInRecipe.objects.filter(
             recipe_id__in=recipes_ids,
         ).values('ingredient_id').annotate(buy_amount=Sum('amount'))

@@ -162,6 +162,7 @@ class IngredientsInRecipe(models.Model):
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
+        ordering = ('ingredient__name',)
 
     def __str__(self):
         return f'{self.ingredient.name} в рецепте "{self.recipe}"'

@@ -91,7 +91,7 @@ class SubscriptionGetSerializer(UserSerializer):
         try:
             if query_params:
                 recipe_data = recipe_data[:int(query_params)]
-        except Exception:
+        except ValueError:
             raise serializers.ValidationError(
                 'Укажите "recipes_limit" целым положительным чиислом.'
             )
@@ -250,6 +250,7 @@ class RecipeEditSerializer(serializers.ModelSerializer):
     @staticmethod
     def add_ingredients(recipe, ingredients):
         """Метод для сохранения ингредиентов в рецепте."""
+        recipe.ingredients_in_recipe.all().delete()
         return recipe.ingredients_in_recipe.bulk_create(
             [
                 IngredientsInRecipe(
